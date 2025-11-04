@@ -2,6 +2,12 @@ package com.ingenieriaPI.IngeTUTO.repository;
 
 import com.ingenieriaPI.IngeTUTO.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface UsuarioRepository extends JpaRepository<Usuario,String> {
+import java.util.Optional;
+
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
+
+    Optional<Usuario> findByCorreoUsuario(String correoUsuario); // ahora coincide con el atributo de la entidad
 }

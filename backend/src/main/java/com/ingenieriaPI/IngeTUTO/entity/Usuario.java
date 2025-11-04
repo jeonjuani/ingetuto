@@ -8,43 +8,43 @@ import lombok.Data;
 import java.util.List;
 
 @Entity
-@Table (name="tbl_usuarios")
+@Table(name = "tbl_usuarios")
 @Data
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id_usuario")
-    private Integer id_usuario;
+    @Column(name = "id_usuario")
+    private Integer idUsuario;
 
     @NotBlank
-    @Column(name="primer_nombre")
-    private String primer_nombre;
+    @Column(name = "primer_nombre_usuario")
+    private String primerNombre;
 
-    @Column(name="segundo_nombre")
-    private String segundo_nombre;
-
-    @NotBlank
-    @Column(name="primer_apellido")
-    private String primer_apellido;
-
-    @Column(name="segundo_apellido")
-    private String segundo_apellido;
+    @Column(name = "segundo_nombre_usuario")
+    private String segundoNombre;
 
     @NotBlank
-    @Column(name="correo_usuario")
-    private String correo_usuario;
+    @Column(name = "primer_apellido_usuario")
+    private String primerApellido;
 
-    @Column(name="telefono_usuario")
-    private String telefono_usuario;
+    @Column(name = "segundo_apellido_usuario")
+    private String segundoApellido;
+
+    @NotBlank
+    @Column(name = "correo_usuario")
+    private String correoUsuario;
+
+    @Column(name = "telefono_usuario")
+    private String telefonoUsuario;
 
     @OneToMany(mappedBy = "tutor")
     @JsonIgnore
-    private List<Tutoria> tutoria_tutor;
+    private List<Tutoria> tutoriaTutor;
 
     @OneToMany(mappedBy = "estudiante")
     @JsonIgnore
-    private List<Tutoria> tutoria_estudiante;
+    private List<Tutoria> tutoriaEstudiante;
 
     @OneToMany(mappedBy = "usuario")
     @JsonIgnore
@@ -53,5 +53,4 @@ public class Usuario {
     @OneToMany(mappedBy = "aspirante")
     @JsonIgnore
     private List<RegistroAspirante> registroAspirantes;
-
 }
