@@ -4,6 +4,7 @@ import com.ingenieriaPI.IngeTUTO.security.JwtAuthFilter;
 import com.ingenieriaPI.IngeTUTO.security.SessionManager;
 import com.ingenieriaPI.IngeTUTO.service.JwtService;
 import com.ingenieriaPI.IngeTUTO.service.UsuarioService;
+import com.ingenieriaPI.IngeTUTO.entity.Usuario;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +13,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import com.ingenieriaPI.IngeTUTO.entity.Usuario;
-
-import java.util.Optional;
 
 @Configuration
 public class SecurityConfig {
@@ -49,22 +47,30 @@ public class SecurityConfig {
     private AuthenticationSuccessHandler authenticationSuccessHandler() {
         return (request, response, authentication) -> {
             OAuth2User user = (OAuth2User) authentication.getPrincipal();
-            String correoUsuario = user.getAttribute("email");
 
-            Optional<Usuario> opt = usuarioService.buscarPorCorreo(correoUsuario);
-            if (opt.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Usuario no registrado en el sistema.");
-                return;
+            // Datos que vienen de Google
+            String givenName = user.getAttribute("given_name");
+            String familyName = user.getAttribute("family_name");
+            String email = user.getAttribute("email");
+
+            try {
+                // ✅ Centraliza toda la lógica en el servicio
+                Usuario usuario = usuarioService.registrarUsuarioDesdeGoogle(givenName, familyName, email);
+
+                // ✅ Genera el token JWT
+                String token = jwtService.generateToken(usuario.getCorreoUsuario());
+                sessionManager.touch(token);
+
+                // ✅ Responde con el token en JSON
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"token\":\"" + token + "\"}");
+
+            } catch (IllegalArgumentException e) {
+                // Caso de correo no permitido (no @udea.edu.co)
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             }
-
-            String token = jwtService.generateToken(correoUsuario);
-            sessionManager.touch(token);
-
-            // 🔹 Enviar el token en JSON en lugar de redirigir
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"token\":\"" + token + "\"}");
-            response.setStatus(HttpServletResponse.SC_OK);
         };
     }
 }
