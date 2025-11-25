@@ -1,26 +1,26 @@
 import React from 'react';
-import logo from './logo.svg';
+import { useAuth } from './context/AuthContext';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import AuthCallback from './components/AuthCallback';
 import './App.css';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const { isAuthenticated } = useAuth();
+
+  // Si hay token o error en la URL, mostrar el callback
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasCallback = urlParams.has('token') || urlParams.has('message');
+  
+  if (hasCallback) {
+    return <AuthCallback />;
+  }
+
+  if (isAuthenticated) {
+    return <Dashboard />;
+  }
+
+  return <Login />;
 }
 
 export default App;

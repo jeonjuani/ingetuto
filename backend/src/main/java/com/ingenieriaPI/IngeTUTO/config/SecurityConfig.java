@@ -8,11 +8,17 @@ import com.ingenieriaPI.IngeTUTO.entity.Usuario;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -31,11 +37,24 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/public/**", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/public/**", "/api/auth/**", "/oauth2/**", "/login/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -61,15 +80,29 @@ public class SecurityConfig {
                 String token = jwtService.generateToken(usuario.getCorreoUsuario());
                 sessionManager.touch(token);
 
-                // ✅ Responde con el token en JSON
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("{\"token\":\"" + token + "\"}");
+                // ✅ Limpiar cualquier contenido previo y redirigir al frontend con el token
+                response.resetBuffer();
+                response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+                String frontendUrl = "http://localhost:3000/?token=" + java.net.URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8);
+                response.setHeader("Location", frontendUrl);
+                response.flushBuffer();
 
             } catch (IllegalArgumentException e) {
                 // Caso de correo no permitido (no @udea.edu.co)
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+                response.resetBuffer();
+                response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+                String frontendUrl = "http://localhost:3000/?message=" + 
+                    java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+                response.setHeader("Location", frontendUrl);
+                response.flushBuffer();
+            } catch (Exception e) {
+                // Error inesperado
+                response.resetBuffer();
+                response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+                String frontendUrl = "http://localhost:3000/?message=" + 
+                    java.net.URLEncoder.encode("Error al procesar la autenticación", java.nio.charset.StandardCharsets.UTF_8);
+                response.setHeader("Location", frontendUrl);
+                response.flushBuffer();
             }
         };
     }
