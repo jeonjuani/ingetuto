@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tbl_usuarios")
@@ -53,4 +55,8 @@ public class Usuario {
     @OneToMany(mappedBy = "aspirante")
     @JsonIgnore
     private List<RegistroAspirante> registroAspirantes;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tbl_rol_x_usuario", joinColumns = @JoinColumn(name = "id_usuario"), inverseJoinColumns = @JoinColumn(name = "id_rol"))
+    private Set<Rol> roles = new HashSet<>();
 }

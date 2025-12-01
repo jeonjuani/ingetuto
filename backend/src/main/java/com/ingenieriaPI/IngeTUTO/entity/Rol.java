@@ -1,24 +1,21 @@
 package com.ingenieriaPI.IngeTUTO.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Entity
-@Table(name="tbl_roles")
+@Table(name = "tbl_roles")
 @Data
 public class Rol {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id_rol")
-    private Integer id_rol;
+    @Column(name = "id_rol")
+    private Integer idRol;
 
-    @NotBlank
-    @Column(name="nombre_rol")
-    private String nombre_rol;
+    @Column(name = "nombre_rol", unique = true, nullable = false)
+    private String nombre;
 
-    @NotBlank
-    @Column(name="desc_rol")
-    private String desc_rol;
+    @Column(name = "desc_rol")
+    private String descripcion;
 }

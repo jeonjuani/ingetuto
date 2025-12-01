@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtService jwtService;
@@ -29,7 +30,7 @@ public class SecurityConfig {
     private final SessionManager sessionManager;
 
     public SecurityConfig(JwtService jwtService, UsuarioService usuarioService,
-                          JwtAuthFilter jwtAuthFilter, SessionManager sessionManager) {
+            JwtAuthFilter jwtAuthFilter, SessionManager sessionManager) {
         this.jwtService = jwtService;
         this.usuarioService = usuarioService;
         this.jwtAuthFilter = jwtAuthFilter;
@@ -40,7 +41,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -54,10 +55,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/public/**", "/api/auth/**", "/oauth2/**", "/login/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api/public/**", "/api/auth/**", "/oauth2/**", "/login/**", "/v3/api-docs/**",
+                                "/swagger-ui/**", "/swagger-ui.html")
+                        .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/usuarios/phone").authenticated()
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(
+                        new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                                org.springframework.http.HttpStatus.UNAUTHORIZED),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/**")))
                 .oauth2Login(oauth2 -> oauth2.successHandler(authenticationSuccessHandler()));
 
         return http.build();
@@ -76,14 +84,25 @@ public class SecurityConfig {
                 // ✅ Centraliza toda la lógica en el servicio
                 Usuario usuario = usuarioService.registrarUsuarioDesdeGoogle(givenName, familyName, email);
 
-                // ✅ Genera el token JWT
-                String token = jwtService.generateToken(usuario.getCorreoUsuario());
+                // ✅ Determinar el rol inicial (prioridad: ESTUDIANTE, sino el primero que
+                // tenga)
+                String activeRole = "ESTUDIANTE";
+                boolean hasEstudiante = usuario.getRoles().stream()
+                        .anyMatch(r -> r.getNombre().equals("ESTUDIANTE"));
+
+                if (!hasEstudiante && !usuario.getRoles().isEmpty()) {
+                    activeRole = usuario.getRoles().iterator().next().getNombre();
+                }
+
+                // ✅ Genera el token JWT con el rol seleccionado
+                String token = jwtService.generateToken(usuario.getCorreoUsuario(), activeRole);
                 sessionManager.touch(token);
 
                 // ✅ Limpiar cualquier contenido previo y redirigir al frontend con el token
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "http://localhost:3000/?token=" + java.net.URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8);
+                String frontendUrl = "http://localhost:3000/?token="
+                        + java.net.URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8);
                 response.setHeader("Location", frontendUrl);
                 response.flushBuffer();
 
@@ -91,16 +110,17 @@ public class SecurityConfig {
                 // Caso de correo no permitido (no @udea.edu.co)
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "http://localhost:3000/?message=" + 
-                    java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+                String frontendUrl = "http://localhost:3000/?message=" +
+                        java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
                 response.setHeader("Location", frontendUrl);
                 response.flushBuffer();
             } catch (Exception e) {
                 // Error inesperado
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "http://localhost:3000/?message=" + 
-                    java.net.URLEncoder.encode("Error al procesar la autenticación", java.nio.charset.StandardCharsets.UTF_8);
+                String frontendUrl = "http://localhost:3000/?message=" +
+                        java.net.URLEncoder.encode("Error al procesar la autenticación",
+                                java.nio.charset.StandardCharsets.UTF_8);
                 response.setHeader("Location", frontendUrl);
                 response.flushBuffer();
             }

@@ -8,21 +8,21 @@ import lombok.Data;
 import java.util.List;
 
 @Entity
-@Table(name="tbl_materias")
+@Table(name = "tbl_materias")
 @Data
 public class Materia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id_materia")
+    @Column(name = "id_materia")
     private Integer id_materia;
 
     @NotBlank
-    @Column(name="nombre_materia")
+    @Column(name = "nombre_materia")
     private String nombre_materia;
 
     @NotBlank
-    @Column(name="codigo_materia")
-    private String codigo_materia;
+    @Column(name = "codigo_materia", unique = true)
+    private String codigoMateria;
 
     @OneToMany(mappedBy = "materia")
     @JsonIgnore

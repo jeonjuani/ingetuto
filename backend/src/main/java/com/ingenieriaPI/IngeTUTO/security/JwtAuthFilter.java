@@ -21,17 +21,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final TokenBlacklist tokenBlacklist;
     private final SessionManager sessionManager;
+    private final com.ingenieriaPI.IngeTUTO.repository.RolRepository rolRepository;
 
-    public JwtAuthFilter(JwtService jwtService, TokenBlacklist tokenBlacklist, SessionManager sessionManager) {
+    public JwtAuthFilter(JwtService jwtService, TokenBlacklist tokenBlacklist, SessionManager sessionManager,
+            com.ingenieriaPI.IngeTUTO.repository.RolRepository rolRepository) {
         this.jwtService = jwtService;
         this.tokenBlacklist = tokenBlacklist;
         this.sessionManager = sessionManager;
+        this.rolRepository = rolRepository;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
@@ -59,12 +62,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String userEmail = jwtService.extractUsername(jwt);
+        String activeRoleName = jwtService.extractActiveRole(jwt);
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtService.isTokenValid(jwt, userEmail)) {
-                UserDetails userDetails = User.withUsername(userEmail).password("").authorities("USER").build();
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                // Cargar permisos del rol activo
+                java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+
+                if (activeRoleName != null) {
+                    rolRepository.findByNombre(activeRoleName).ifPresent(rol -> {
+                        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                                "ROLE_" + rol.getNombre())); // Asegurar prefijo ROLE_
+                        // También agregar la autoridad sin prefijo para compatibilidad
+                        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                                rol.getNombre()));
+                    });
+                }
+
+                UserDetails userDetails = User.withUsername(userEmail)
+                        .password("")
+                        .authorities(authorities)
+                        .build();
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                        null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
