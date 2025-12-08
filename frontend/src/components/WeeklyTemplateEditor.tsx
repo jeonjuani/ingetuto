@@ -35,7 +35,6 @@ const WeeklyTemplateEditor: React.FC = () => {
     const handleCellClick = (day: string, hour: number) => {
         const hourStr = `${hour.toString().padStart(2, '0')}:00:00`;
 
-        // Check if block exists
         const existingIndex = template.findIndex(
             b => b.diaSemana === day && b.horaInicio === hourStr
         );
@@ -45,16 +44,13 @@ const WeeklyTemplateEditor: React.FC = () => {
         if (existingIndex >= 0) {
             const block = newTemplate[existingIndex];
             if (block.modalidad === 'VIRTUAL') {
-                // Change to PRESENCIAL
                 block.modalidad = 'PRESENCIAL';
                 setTemplate(newTemplate);
             } else {
-                // If PRESENCIAL (or other), remove it
                 newTemplate.splice(existingIndex, 1);
                 setTemplate(newTemplate);
             }
         } else {
-            // Add block (default VIRTUAL)
             const newBlock: DisponibilidadSemanalDTO = {
                 diaSemana: day,
                 horaInicio: hourStr,
