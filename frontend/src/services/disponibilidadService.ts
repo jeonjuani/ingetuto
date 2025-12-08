@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api/disponibilidad';
+import { axiosInstance } from './axiosConfig';
 
 export interface DisponibilidadSemanalDTO {
     idDisponibilidadSemanal?: number;
@@ -33,108 +33,80 @@ export interface ValidacionResponse {
     bloquesSinModalidad: any[];
 }
 
-const handleResponse = async (response: Response) => {
-    const text = await response.text();
-    let data;
-    try {
-        data = text ? JSON.parse(text) : {};
-    } catch (e) {
-        console.error('Error parsing JSON:', text);
-        throw new Error('Respuesta del servidor inválida');
-    }
-
-    if (!response.ok) {
-        throw new Error(data.error || data.message || 'Error en la petición');
-    }
-    return data;
-};
-
 export const disponibilidadService = {
     // Weekly template
     crearPlantillaSemanal: async (bloques: DisponibilidadSemanalDTO[], token: string) => {
-        const response = await fetch(`${API_URL}/plantilla-semanal`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(bloques)
-        });
-        return handleResponse(response);
-    },
-
-    obtenerPlantillaSemanal: async (token: string): Promise<DisponibilidadSemanalDTO[]> => {
-        const response = await fetch(`${API_URL}/plantilla-semanal`, {
+        const response = await axiosInstance.post('/api/disponibilidad/plantilla-semanal', bloques, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        return handleResponse(response);
+        return response.data;
+    },
+
+    obtenerPlantillaSemanal: async (token: string): Promise<DisponibilidadSemanalDTO[]> => {
+        const response = await axiosInstance.get('/api/disponibilidad/plantilla-semanal', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data;
     },
 
     // Monthly availability
     generarMensual: async (mes: number, anio: number, token: string): Promise<GeneracionResponse> => {
-        const response = await fetch(`${API_URL}/generar-mensual`, {
-            method: 'POST',
+        const response = await axiosInstance.post('/api/disponibilidad/generar-mensual', { mes, anio }, {
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ mes, anio })
+            }
         });
-        return handleResponse(response);
+        return response.data;
     },
 
     obtenerMensual: async (mes: number, anio: number, token: string): Promise<DisponibilidadMensualDTO[]> => {
-        const response = await fetch(`${API_URL}/mensual/${mes}/${anio}`, {
+        const response = await axiosInstance.get(`/api/disponibilidad/mensual/${mes}/${anio}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        return handleResponse(response);
+        return response.data;
     },
 
     validarConfirmar: async (mes: number, anio: number, token: string): Promise<ValidacionResponse> => {
-        const response = await fetch(`${API_URL}/validar-confirmar`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ mes, anio })
-        });
-        return handleResponse(response);
-    },
-
-    eliminarBloque: async (bloqueId: number, token: string) => {
-        const response = await fetch(`${API_URL}/bloque/${bloqueId}`, {
-            method: 'DELETE',
+        const response = await axiosInstance.post('/api/disponibilidad/validar-confirmar', { mes, anio }, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        return handleResponse(response);
+        return response.data;
+    },
+
+    eliminarBloque: async (bloqueId: number, token: string) => {
+        const response = await axiosInstance.delete(`/api/disponibilidad/bloque/${bloqueId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data;
     },
 
     modificarModalidad: async (bloqueId: number, modalidad: string, token: string) => {
-        const response = await fetch(`${API_URL}/bloque/${bloqueId}/modalidad`, {
-            method: 'PATCH',
+        const response = await axiosInstance.patch(`/api/disponibilidad/bloque/${bloqueId}/modalidad`, { modalidad }, {
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ modalidad })
+            }
         });
-        return handleResponse(response);
+        return response.data;
     },
 
     // Student view
     obtenerPorMateria: async (materiaId: number, fechaInicio: string, fechaFin: string, token: string): Promise<DisponibilidadMensualDTO[]> => {
-        const response = await fetch(`${API_URL}/por-materia/${materiaId}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`, {
+        const response = await axiosInstance.get(`/api/disponibilidad/por-materia/${materiaId}`, {
+            params: { fechaInicio, fechaFin },
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        return handleResponse(response);
+        return response.data;
     }
 };

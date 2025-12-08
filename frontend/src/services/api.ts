@@ -1,12 +1,10 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+import { axiosInstance } from './axiosConfig';
 
 export const api = {
   async logout(token: string): Promise<void> {
-    await fetch(`${API_BASE_URL}/api/auth/logout`, {
-      method: 'POST',
+    await axiosInstance.post('/api/auth/logout', {}, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
       },
     });
   },

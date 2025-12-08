@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8080/api/tutorias';
+import { axiosInstance } from './axiosConfig';
 
 export interface TutoriaDTO {
     idTutoria: number;
@@ -29,8 +27,8 @@ export const tutoriaService = {
      * Reserva una tutoría
      */
     reservarTutoria: async (bloqueId: number, materiaId: number, nombreTema: string, token: string): Promise<TutoriaDTO> => {
-        const response = await axios.post(
-            `${API_URL}/reservar`,
+        const response = await axiosInstance.post(
+            '/api/tutorias/reservar',
             { bloqueId, materiaId, nombreTema },
             {
                 headers: {
@@ -47,7 +45,7 @@ export const tutoriaService = {
      */
     obtenerMisTutorias: async (estados?: string[], token?: string): Promise<TutoriaDTO[]> => {
         const params = estados && estados.length > 0 ? { estados: estados.join(',') } : {};
-        const response = await axios.get(`${API_URL}/estudiante`, {
+        const response = await axiosInstance.get('/api/tutorias/estudiante', {
             params,
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
@@ -59,7 +57,7 @@ export const tutoriaService = {
      */
     obtenerTutoriasAsignadas: async (estados?: string[], token?: string): Promise<TutoriaDTO[]> => {
         const params = estados && estados.length > 0 ? { estados: estados.join(',') } : {};
-        const response = await axios.get(`${API_URL}/tutor`, {
+        const response = await axiosInstance.get('/api/tutorias/tutor', {
             params,
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
@@ -70,8 +68,8 @@ export const tutoriaService = {
      * Tutor agrega link de Meet
      */
     agregarLink: async (tutoriaId: number, linkTutoria: string, token: string): Promise<void> => {
-        await axios.put(
-            `${API_URL}/${tutoriaId}/link`,
+        await axiosInstance.put(
+            `/api/tutorias/${tutoriaId}/link`,
             { linkTutoria },
             {
                 headers: {
@@ -86,8 +84,8 @@ export const tutoriaService = {
      * Cancela una tutoría
      */
     cancelarTutoria: async (tutoriaId: number, observaciones: string, token: string): Promise<void> => {
-        await axios.put(
-            `${API_URL}/${tutoriaId}/cancelar`,
+        await axiosInstance.put(
+            `/api/tutorias/${tutoriaId}/cancelar`,
             { observaciones },
             {
                 headers: {
@@ -102,8 +100,8 @@ export const tutoriaService = {
      * Estudiante confirma asistencia
      */
     confirmarAsistenciaEstudiante: async (tutoriaId: number, token: string): Promise<void> => {
-        await axios.put(
-            `${API_URL}/${tutoriaId}/confirmar-estudiante`,
+        await axiosInstance.put(
+            `/api/tutorias/${tutoriaId}/confirmar-estudiante`,
             {},
             {
                 headers: {
@@ -117,8 +115,8 @@ export const tutoriaService = {
      * Tutor confirma asistencia
      */
     confirmarAsistenciaTutor: async (tutoriaId: number, token: string): Promise<void> => {
-        await axios.put(
-            `${API_URL}/${tutoriaId}/confirmar-tutor`,
+        await axiosInstance.put(
+            `/api/tutorias/${tutoriaId}/confirmar-tutor`,
             {},
             {
                 headers: {

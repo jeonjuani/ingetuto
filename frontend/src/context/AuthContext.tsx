@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { axiosInstance } from '../services/axiosConfig';
+import SessionExpiredModal from '../components/SessionExpiredModal';
 
 interface Role {
   idRol: number;
@@ -32,7 +34,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
   const [needsPhoneNumber, setNeedsPhoneNumber] = useState<boolean | null>(null);
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   const hasInitialized = React.useRef(false);
 
   // Helper para decodificar el payload del JWT
@@ -42,6 +46,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (e) {
       return null;
     }
+  };
+
+  // Escuchar evento de sesión expirada
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setShowSessionExpiredModal(true);
+      // Limpiar datos locales pero mantener el modal visible
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      setUser(null);
+      setToken(null);
+    };
+
+    window.addEventListener('auth:session-expired', handleSessionExpired);
+
+    return () => {
+      window.removeEventListener('auth:session-expired', handleSessionExpired);
+    };
+  }, []);
+
+  const handleSessionExpiredConfirm = () => {
+    setShowSessionExpiredModal(false);
+    window.location.href = '/login';
   };
 
   // Cargar usuario y token desde localStorage al iniciar
@@ -59,32 +86,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUser = async (accessToken: string) => {
     try {
-      const response = await fetch('http://localhost:8080/api/auth/me', {
+      const response = await axiosInstance.get('/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
       });
 
-      if (response.ok) {
-        const usuario = await response.json();
-        const decodedToken = parseJwt(accessToken);
-        const activeRole = decodedToken ? decodedToken.activeRole : null;
+      const usuario = response.data;
+      const decodedToken = parseJwt(accessToken);
+      const activeRole = decodedToken ? decodedToken.activeRole : null;
 
-        const userData: User = {
-          email: usuario.correoUsuario,
-          name: `${usuario.primerNombre} ${usuario.primerApellido}`.trim(),
-          id: usuario.idUsuario,
-          roles: usuario.roles || [],
-          activeRole: activeRole
-        };
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+      const userData: User = {
+        email: usuario.correoUsuario,
+        name: `${usuario.primerNombre} ${usuario.primerApellido}`.trim(),
+        id: usuario.idUsuario,
+        roles: usuario.roles || [],
+        activeRole: activeRole
+      };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
 
-        // Verificar si necesita teléfono
-        const phoneValue = usuario.telefonoUsuario;
-        const hasPhone = phoneValue && typeof phoneValue === 'string' && phoneValue.trim().length >= 10;
-        setNeedsPhoneNumber(!hasPhone);
-      }
+      // Verificar si necesita teléfono
+      const phoneValue = usuario.telefonoUsuario;
+      const hasPhone = phoneValue && typeof phoneValue === 'string' && phoneValue.trim().length >= 10;
+      setNeedsPhoneNumber(!hasPhone);
     } catch (error) {
       console.error('Error al obtener datos del usuario:', error);
     }
@@ -100,23 +125,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/auth/switch-role?targetRole=${targetRole}`, {
-        method: 'POST',
+      const response = await axiosInstance.post(`/api/auth/switch-role?targetRole=${targetRole}`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newToken = data.token;
-        setToken(newToken);
-        localStorage.setItem('token', newToken);
-        await fetchUser(newToken);
-        window.location.reload(); // Recargar para asegurar que el estado se limpie/actualice completamente
-      } else {
-        console.error('Error al cambiar de rol');
-      }
+      const data = response.data;
+      const newToken = data.token;
+      setToken(newToken);
+      localStorage.setItem('token', newToken);
+      await fetchUser(newToken);
+      window.location.reload(); // Recargar para asegurar que el estado se limpie/actualice completamente
     } catch (error) {
       console.error('Error de red al cambiar de rol:', error);
     }
@@ -148,23 +168,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/usuarios/phone?phoneNumber=${encodeURIComponent(phone)}&userId=${user.id}`, {
-        method: 'PUT',
+      await axiosInstance.put(`/api/usuarios/phone?phoneNumber=${encodeURIComponent(phone)}&userId=${user.id}`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Error al actualizar el teléfono');
-      }
-
       // Recargar usuario para actualizar el estado
       await fetchUser(token);
       setNeedsPhoneNumber(false);
     } catch (error: any) {
-      throw new Error(error.message || 'Error de conexión');
+      throw new Error(error.response?.data || error.message || 'Error de conexión');
     }
   };
 
@@ -183,6 +197,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }}
     >
       {children}
+      {showSessionExpiredModal && (
+        <SessionExpiredModal onConfirm={handleSessionExpiredConfirm} />
+      )}
     </AuthContext.Provider>
   );
 };
