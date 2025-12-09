@@ -15,7 +15,7 @@ const SessionExpiredModal: React.FC<SessionExpiredModalProps> = ({ onConfirm }) 
                     Por favor, inicia sesión nuevamente para continuar.
                 </p>
                 <button onClick={onConfirm} className="session-expired-btn">
-                    Ir al Login
+                    Ir al inicio de sesión
                 </button>
             </div>
         </div>

@@ -76,7 +76,8 @@ const MonthlyCalendarView: React.FC = () => {
 
             setTimeout(() => setMessage(null), 5000);
         } catch (error: any) {
-            setMessage({ type: 'error', text: error.message });
+            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Error al generar el calendario';
+            setMessage({ type: 'error', text: errorMsg });
         } finally {
             setLoading(false);
         }
@@ -95,7 +96,8 @@ const MonthlyCalendarView: React.FC = () => {
                 // The modal uses the blocks prop which comes from state, so it will update automatically
             }
         } catch (error: any) {
-            alert(error.message);
+            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Error al eliminar el bloque';
+            alert(errorMsg);
         }
     };
 
@@ -113,7 +115,8 @@ const MonthlyCalendarView: React.FC = () => {
             ));
         } catch (error: any) {
             console.error('Error changing modality:', error);
-            alert(error.message);
+            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Error al cambiar la modalidad';
+            alert(errorMsg);
         }
     };
 
