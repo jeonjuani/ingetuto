@@ -3,11 +3,18 @@ import { useAuth } from '../context/AuthContext';
 import { disponibilidadService, DisponibilidadMensualDTO } from '../services/disponibilidadService';
 import { FaChevronLeft as FaChevronLeftIcon, FaChevronRight as FaChevronRightIcon, FaCalendarPlus as FaCalendarPlusIcon } from 'react-icons/fa';
 import DayDetailModal from './DayDetailModal';
+import ConfirmModal from './ConfirmModal';
 
 const FaChevronLeft: any = FaChevronLeftIcon;
 const FaChevronRight: any = FaChevronRightIcon;
 const FaCalendarPlus: any = FaCalendarPlusIcon;
-
+interface ConfirmModalState {
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'warning' | 'danger' | 'info';
+    onConfirm: () => void;
+}
 const MonthlyCalendarView: React.FC = () => {
     const { token } = useAuth();
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -17,6 +24,7 @@ const MonthlyCalendarView: React.FC = () => {
     const [deadline, setDeadline] = useState<string | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+    const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
     useEffect(() => {
         loadMonthData();
     }, [currentDate]);
@@ -52,53 +60,49 @@ const MonthlyCalendarView: React.FC = () => {
         // Check if this is a regeneration
         const isRegeneration = blocks.length > 0;
 
-        let confirmMessage = '';
-        if (isRegeneration) {
-            confirmMessage = `Ya existe un calendario generado para ${monthName}.\n\n` +
-                `¿Deseas REGENERARLO completamente con la plantilla actual?\n\n` +
-                `ADVERTENCIA: Esto eliminará TODOS los bloques del mes (incluyendo DISPONIBLES, RESERVADOS y OCUPADOS) ` +
-                `y los reemplazará con los de tu plantilla actualizada.\n\n` +
-                `Si existen tutorías reservadas u ocupadas, la operación será cancelada para proteger esas reservas.`;
-        } else {
-            confirmMessage = `¿Estás seguro de generar la disponibilidad para ${monthName}?`;
-        }
-
-        if (!window.confirm(confirmMessage)) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const response = await disponibilidadService.generarMensual(mes, anio, token);
-
-            setMessage({ type: 'success', text: response.mensaje });
-            loadMonthData(); // Reload to see new blocks
-
-            setTimeout(() => setMessage(null), 5000);
-        } catch (error: any) {
-            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Error al generar el calendario';
-            setMessage({ type: 'error', text: errorMsg });
-        } finally {
-            setLoading(false);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: isRegeneration ? `Regenerar calendario de ${monthName}` : `Generar disponibilidad`,
+            message: isRegeneration
+                ? `Ya existe un calendario generado para ${monthName}.\n\n¿Deseas REGENERARLO completamente con la plantilla actual?\n\nADVERTENCIA: Esto eliminará TODOS los bloques del mes (incluyendo DISPONIBLES, RESERVADOS y OCUPADOS) y los reemplazará con los de tu plantilla actualizada.\n\nSi existen tutorías reservadas u ocupadas, la operación será cancelada para proteger esas reservas.`
+                : `¿Estás seguro de generar la disponibilidad para ${monthName}?`,
+            type: isRegeneration ? 'warning' : 'info',
+            onConfirm: async () => {
+                setConfirmModal(null);
+                try {
+                    setLoading(true);
+                    const response = await disponibilidadService.generarMensual(mes, anio, token);
+                    setMessage({ type: 'success', text: response.mensaje });
+                    loadMonthData();
+                    setTimeout(() => setMessage(null), 5000);
+                } catch (error: any) {
+                    const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Error al generar el calendario';
+                    setMessage({ type: 'error', text: errorMsg });
+                } finally {
+                    setLoading(false);
+                }
+            },
+        });
     };
 
     const handleBlockDelete = async (blockId: number) => {
         if (!token) return;
-        if (!window.confirm('¿Eliminar este bloque de disponibilidad?')) return;
-
-        try {
-            await disponibilidadService.eliminarBloque(blockId, token);
-            // Remove from local state
-            setBlocks(blocks.filter(b => b.idDisponibilidadMensual !== blockId));
-            // Also update selected day view if open
-            if (selectedDay) {
-                // The modal uses the blocks prop which comes from state, so it will update automatically
-            }
-        } catch (error: any) {
-            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Error al eliminar el bloque';
-            alert(errorMsg);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: 'Eliminar bloque',
+            message: '¿Estás seguro de que deseas eliminar este bloque de disponibilidad?',
+            type: 'danger',
+            onConfirm: async () => {
+                setConfirmModal(null);
+                try {
+                    await disponibilidadService.eliminarBloque(blockId, token);
+                    setBlocks(blocks.filter(b => b.idDisponibilidadMensual !== blockId));
+                } catch (error: any) {
+                    const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Error al eliminar el bloque';
+                    setMessage({ type: 'error', text: errorMsg });
+                }
+            },
+        });
     };
 
     const handleModalityChange = async (blockId: number, newModality: string) => {
@@ -259,6 +263,20 @@ const MonthlyCalendarView: React.FC = () => {
                     onClose={() => setSelectedDay(null)}
                     onBlockDelete={handleBlockDelete}
                     onModalityChange={handleModalityChange}
+                />
+            )}
+
+            {/* Modal de confirmación reutilizable */}
+            {confirmModal && (
+                <ConfirmModal
+                    isOpen={confirmModal.isOpen}
+                    title={confirmModal.title}
+                    message={confirmModal.message}
+                    type={confirmModal.type}
+                    confirmText={confirmModal.type === 'danger' ? 'Eliminar' : blocks.length > 0 ? 'Sí, continuar' : 'Generar'}
+                    cancelText="Cancelar"
+                    onConfirm={confirmModal.onConfirm}
+                    onCancel={() => setConfirmModal(null)}
                 />
             )}
         </div>
