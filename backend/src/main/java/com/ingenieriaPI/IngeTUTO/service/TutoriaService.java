@@ -42,6 +42,9 @@ public class TutoriaService {
         // 2. Obtener bloque de disponibilidad
         DisponibilidadMensual bloque = disponibilidadMensualRepository.findById(request.getBloqueId())
                 .orElseThrow(() -> new IllegalArgumentException("Bloque de disponibilidad no encontrado"));
+        if(bloque.getTutor().getIdUsuario().equals(estudianteId)){
+            throw new IllegalArgumentException("No puedes reservar una tutoría contigo mismo");
+        }
 
         // 3. Validar que el bloque esté DISPONIBLE
         if (bloque.getEstado() != EstadoDisponibilidad.DISPONIBLE) {
