@@ -20,7 +20,7 @@ interface Materia {
 }
 
 const StudentAvailabilityBrowser: React.FC = () => {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const [materias, setMaterias] = useState<Materia[]>([]);
     const [selectedMateria, setSelectedMateria] = useState<string>('');
     const [selectedModality, setSelectedModality] = useState<string>('TODAS');
@@ -142,6 +142,9 @@ const StudentAvailabilityBrowser: React.FC = () => {
     const filteredResults = results.filter(block => {
         // Solo mostrar bloques DISPONIBLES
         if (block.estado !== 'DISPONIBLE') return false;
+
+        //No mostrar bloques del propio estudiante
+        if(block.idTutor == user?.id) return false; // No mostrar bloques propios
 
         // Filtrar por modalidad
         if (selectedModality === 'TODAS') return true;
