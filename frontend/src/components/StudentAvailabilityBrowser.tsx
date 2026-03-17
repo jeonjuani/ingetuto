@@ -146,6 +146,13 @@ const StudentAvailabilityBrowser: React.FC = () => {
         //No mostrar bloques del propio estudiante
         if(block.idTutor == user?.id) return false; // No mostrar bloques propios
 
+        // No mostrar bloques con menos de 1 hora de anticipación
+        const ahora = new Date();
+        const fechaHoraBloque = new Date(`${block.fecha}T${block.horaInicio}`);
+        const diferenciaMs = fechaHoraBloque.getTime() - ahora.getTime();
+        const diferenciaHoras = diferenciaMs / (1000 * 60 * 60);
+        if (diferenciaHoras < 1) return false;
+        
         // Filtrar por modalidad
         if (selectedModality === 'TODAS') return true;
         return block.modalidad === selectedModality;

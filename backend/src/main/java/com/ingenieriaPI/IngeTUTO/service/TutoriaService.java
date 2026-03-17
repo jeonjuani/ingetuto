@@ -7,6 +7,7 @@ import com.ingenieriaPI.IngeTUTO.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -176,6 +177,7 @@ public class TutoriaService {
         // 5. Si ambos confirmaron, cambiar estado a REALIZADA
         if (Boolean.TRUE.equals(tutoria.getConfirmacionTutor())) {
             tutoria.setEstado(EstadoTutoria.REALIZADA);
+            tutoria.setLinkTutoria(null);
         }
 
         tutoriaRepository.save(tutoria);
@@ -207,6 +209,7 @@ public class TutoriaService {
         // 5. Si ambos confirmaron, cambiar estado a REALIZADA
         if (Boolean.TRUE.equals(tutoria.getConfirmacionEstudiante())) {
             tutoria.setEstado(EstadoTutoria.REALIZADA);
+            tutoria.setLinkTutoria(null);
         }
 
         tutoriaRepository.save(tutoria);
@@ -216,6 +219,7 @@ public class TutoriaService {
      * Obtiene las tutorías de un estudiante
      */
     public List<TutoriaDTO> obtenerTutoriasEstudiante(Integer estudianteId, List<EstadoTutoria> estados) {
+        cancelarTutoriasVencidas();
         Usuario estudiante = usuarioRepository.findById(estudianteId)
                 .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
 
@@ -230,11 +234,29 @@ public class TutoriaService {
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
     }
+    @Transactional
+    public void cancelarTutoriasVencidas() {
+        LocalDate fechaLimite = LocalDate.now().minusDays(2);
+        List<Tutoria> vencidas = tutoriaRepository.findTutoriasVencidasSinConfirmar(fechaLimite);
 
+        for (Tutoria tutoria : vencidas) {
+            // Liberar bloque de disponibilidad
+            DisponibilidadMensual bloque = tutoria.getDisponibilidadMensual();
+            if (bloque != null) {
+                bloque.setEstado(EstadoDisponibilidad.DISPONIBLE);
+                disponibilidadMensualRepository.save(bloque);
+            }
+            tutoria.setEstado(EstadoTutoria.CANCELADA);
+            tutoria.setLinkTutoria(null);
+            tutoria.setObservaciones("Cancelada automáticamente por falta de confirmación de asistencia");
+            tutoriaRepository.save(tutoria);
+        }
+    }
     /**
      * Obtiene las tutorías de un tutor
      */
     public List<TutoriaDTO> obtenerTutoriasTutor(Integer tutorId, List<EstadoTutoria> estados) {
+        cancelarTutoriasVencidas();
         Usuario tutor = usuarioRepository.findById(tutorId)
                 .orElseThrow(() -> new IllegalArgumentException("Tutor no encontrado"));
 
@@ -249,6 +271,7 @@ public class TutoriaService {
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Convierte una entidad Tutoria a DTO

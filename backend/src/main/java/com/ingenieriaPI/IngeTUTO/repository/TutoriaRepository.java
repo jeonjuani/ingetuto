@@ -47,4 +47,13 @@ public interface TutoriaRepository extends JpaRepository<Tutoria, Integer> {
      */
     @Query("SELECT t FROM Tutoria t WHERE t.estado = 'SIN_CONFIRMAR' ORDER BY t.fechaTutoria DESC")
     List<Tutoria> findTutoriasPendientesRevision();
+
+    /*
+    * Buscar tutorías programadas que fue hace 2 días
+    * */
+    @Query("SELECT t FROM Tutoria t WHERE t.estado = 'PROGRAMADA' " +
+            "AND t.fechaTutoria < :fechaLimite " +
+            "AND (t.confirmacionEstudiante IS NULL OR t.confirmacionEstudiante = false " +
+            "OR t.confirmacionTutor IS NULL OR t.confirmacionTutor = false)")
+    List<Tutoria> findTutoriasVencidasSinConfirmar(@Param("fechaLimite") LocalDate fechaLimite);
 }

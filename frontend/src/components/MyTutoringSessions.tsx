@@ -111,8 +111,8 @@ const MyTutoringSessions: React.FC = () => {
         try {
             setConfirming(true);
             await tutoriaService.confirmarAsistenciaEstudiante(tutoria.idTutoria, token);
+            await loadTutorias();
             alert('Asistencia confirmada exitosamente');
-            loadTutorias();
         } catch (error) {
             console.error('Error confirming attendance:', error);
             alert('Error al confirmar asistencia');
@@ -211,7 +211,7 @@ const MyTutoringSessions: React.FC = () => {
                                 <span>{tutoria.modalidad}</span>
                             </div>
 
-                            {tutoria.linkTutoria && tutoria.modalidad === 'VIRTUAL' && tutoria.estado !== 'CANCELADA' && (
+                            {tutoria.linkTutoria && tutoria.modalidad === 'VIRTUAL' && tutoria.estado !== 'CANCELADA' && tutoria.estado !== 'REALIZADA' && (
                                 <div style={{ marginTop: '12px' }}>
                                     <a
                                         href={tutoria.linkTutoria}
