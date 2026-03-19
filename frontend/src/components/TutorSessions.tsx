@@ -29,7 +29,9 @@ const TutorSessions: React.FC = () => {
     const [processing, setProcessing] = useState(false);
     const [confirming, setConfirming] = useState(false);
     const [chatTutoria, setChatTutoria] = useState<TutoriaDTO | null>(null);
-
+    useEffect(() => {
+    loadTutorias();
+    }, [filter]);
         // Polling cada 5 segundos para actualizar no leídos
     useEffect(() => {
         if (tutorias.length === 0 || !token) return;
@@ -172,9 +174,14 @@ const TutorSessions: React.FC = () => {
         }
     };
 
-    const filteredTutorias = filter === 'TODAS'
-        ? tutorias
-        : tutorias.filter(t => t.estado === filter);
+    const filteredTutorias = (filter === 'TODAS'
+    ? tutorias
+    : tutorias.filter(t => t.estado === filter)
+    ).sort((a, b) => {
+        const fechaA = new Date(`${a.fechaTutoria}T${a.horaInicio}`);
+        const fechaB = new Date(`${b.fechaTutoria}T${b.horaInicio}`);
+        return fechaB.getTime() - fechaA.getTime(); // Reciente -> Antigua
+    });
 
     const [noLeidos, setNoLeidos] = useState<{ [idTutoria: number]: number }>({});
     
@@ -254,9 +261,6 @@ const TutorSessions: React.FC = () => {
                                 </p>
                                 <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
                                     <strong>Tema:</strong> {tutoria.nombreTema}
-                                </p>
-                                <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
-                                    <strong>Teléfono del estudiante:</strong> {tutoria.telefonoEstudiante || 'No registrado'}
                                 </p>
                             </div>
 
