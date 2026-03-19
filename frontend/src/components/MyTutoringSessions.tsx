@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { tutoriaService, TutoriaDTO } from '../services/tutoriaService';
 import { FaCalendarAlt as FaCalendarAltIcon, FaUser as FaUserIcon, FaClock as FaClockIcon, FaLaptop as FaLaptopIcon, FaChalkboardTeacher as FaChalkboardTeacherIcon, FaLink as FaLinkIcon, FaTimes as FaTimesIcon } from 'react-icons/fa';
 import './AvailabilityManagement.css';
+import TutoriaChat from './tutoriaChat';
+import chatIcon from '../assets/chatIcon.png';
+import { mensajeService } from '../services/mensajeService';
 
 const FaCalendarAlt: any = FaCalendarAltIcon;
 const FaUser: any = FaUserIcon;
@@ -22,10 +25,23 @@ const MyTutoringSessions: React.FC = () => {
     const [cancelReason, setCancelReason] = useState('');
     const [canceling, setCanceling] = useState(false);
     const [confirming, setConfirming] = useState(false);
+    const [chatTutoria, setChatTutoria] = useState<TutoriaDTO | null>(null);
 
+    // Polling cada 5 segundos para actualizar no leídos
     useEffect(() => {
-        loadTutorias();
-    }, [filter]);
+        if (tutorias.length === 0 || !token) return;
+
+        const actualizarNoLeidos = async () => {
+            tutorias.forEach(async (t) => {
+                const count = await mensajeService.contarNoLeidos(t.idTutoria, token);
+                setNoLeidos(prev => ({ ...prev, [t.idTutoria]: count }));
+            });
+        };
+
+        actualizarNoLeidos();
+        const interval = setInterval(actualizarNoLeidos, 5000);
+        return () => clearInterval(interval);
+    }, [tutorias]);
 
     const loadTutorias = async () => {
         if (!token) return;
@@ -124,6 +140,18 @@ const MyTutoringSessions: React.FC = () => {
     const filteredTutorias = filter === 'TODAS'
         ? tutorias
         : tutorias.filter(t => t.estado === filter);
+
+    
+    const [noLeidos, setNoLeidos] = useState<{ [idTutoria: number]: number }>({});
+
+    // Cargar no leídos cuando cargan las tutorías
+    useEffect(() => {
+        if (tutorias.length === 0 || !token) return;
+        tutorias.forEach(async (t) => {
+            const count = await mensajeService.contarNoLeidos(t.idTutoria, token);
+            setNoLeidos(prev => ({ ...prev, [t.idTutoria]: count }));
+        });
+    }, [tutorias]);
 
     return (
         <div className="student-browser">
@@ -276,6 +304,50 @@ const MyTutoringSessions: React.FC = () => {
                                 </button>
                             )}
 
+                            <button
+                                onClick={() => {setChatTutoria(tutoria);
+                                    setNoLeidos(prev => ({ ...prev, [tutoria.idTutoria]: 0 }));
+                                }}
+                                style={{
+                                    marginTop: '12px',
+                                    width: '100%',
+                                    padding: '10px',
+                                    backgroundColor: '#006837',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    position: 'relative'
+                                }}
+                            >
+                                <img 
+                                    src={chatIcon} 
+                                    alt="chat" 
+                                    style={{ width: '18px', height: '18px', filter: 'invert(1)' }} 
+                                />
+                                Chat
+                                {noLeidos[tutoria.idTutoria] > 0 && (
+                                <span style={{
+                                    position: 'absolute',
+                                    top: '-6px',
+                                    right: '-6px',
+                                    backgroundColor: '#f44336',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    width: '18px',
+                                    height: '18px',
+                                    fontSize: '11px',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {noLeidos[tutoria.idTutoria]}
+                                </span>
+                            )}
+                            </button>
                             {canCancel(tutoria.estado) && (
                                 <button
                                     onClick={() => handleCancelClick(tutoria)}
@@ -398,8 +470,16 @@ const MyTutoringSessions: React.FC = () => {
                     </div>
                 </div>
             )}
+            {chatTutoria && (
+                <TutoriaChat
+                    tutoria={chatTutoria}
+                    noLeidos={noLeidos[chatTutoria.idTutoria] || 0}
+                    onClose={() => setChatTutoria(null)}
+                />
+            )}
         </div>
     );
 };
+
 
 export default MyTutoringSessions;
