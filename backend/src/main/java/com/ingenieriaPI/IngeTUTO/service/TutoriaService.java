@@ -7,6 +7,8 @@ import com.ingenieriaPI.IngeTUTO.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -102,6 +104,11 @@ public class TutoriaService {
             throw new IllegalArgumentException("No tienes permiso para modificar esta tutoría");
         }
 
+        // 2.1 Validar que el link sea de Google Meet
+        if (!esLinkGoogleMeetValido(link)) {
+            throw new IllegalArgumentException("El link debe ser una URL válida de Google Meet (meet.google.com)");
+        }
+
         // 3. Validar estado
         if (tutoria.getEstado() != EstadoTutoria.RESERVADA) {
             throw new IllegalStateException("Solo se puede agregar link a tutorías en estado RESERVADA");
@@ -112,6 +119,38 @@ public class TutoriaService {
         tutoria.setEstado(EstadoTutoria.PROGRAMADA);
 
         tutoriaRepository.save(tutoria);
+    }
+
+    private boolean esLinkGoogleMeetValido(String link) {
+        if (link == null) {
+            return false;
+        }
+        String trimmed = link.trim();
+        if (trimmed.isEmpty()) {
+            return false;
+        }
+
+        // Aceptar links con o sin esquema
+        String candidate = trimmed.matches("^[a-zA-Z][a-zA-Z0-9+\\-.]*://.*")
+                ? trimmed
+                : "https://" + trimmed;
+
+        try {
+            URI uri = new URI(candidate);
+            String host = uri.getHost();
+            if (host == null) {
+                return false;
+            }
+            // Debe ser exactamente meet.google.com (evita meet.google.com.evil.com)
+            if (!"meet.google.com".equalsIgnoreCase(host)) {
+                return false;
+            }
+            // Requerir al menos una ruta (ej: /abc-defg-hij)
+            String path = uri.getPath();
+            return path != null && !path.isBlank() && path.startsWith("/");
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 
     /**
@@ -160,6 +199,9 @@ public class TutoriaService {
         Tutoria tutoria = tutoriaRepository.findById(tutoriaId)
                 .orElseThrow(() -> new IllegalArgumentException("Tutoría no encontrada"));
 
+        // 1.1 Validar que la tutoría ya haya finalizado
+        validarTutoriaFinalizadaParaConfirmacion(tutoria);
+
         // 2. Validar que sea el estudiante correcto
         if (!tutoria.getEstudiante().getIdUsuario().equals(estudianteId)) {
             throw new IllegalArgumentException("No tienes permiso para confirmar esta tutoría");
@@ -192,6 +234,9 @@ public class TutoriaService {
         Tutoria tutoria = tutoriaRepository.findById(tutoriaId)
                 .orElseThrow(() -> new IllegalArgumentException("Tutoría no encontrada"));
 
+        // 1.1 Validar que la tutoría ya haya finalizado
+        validarTutoriaFinalizadaParaConfirmacion(tutoria);
+
         // 2. Validar que sea el tutor correcto
         if (!tutoria.getTutor().getIdUsuario().equals(tutorId)) {
             throw new IllegalArgumentException("No tienes permiso para confirmar esta tutoría");
@@ -213,6 +258,19 @@ public class TutoriaService {
         }
 
         tutoriaRepository.save(tutoria);
+    }
+
+    private void validarTutoriaFinalizadaParaConfirmacion(Tutoria tutoria) {
+        if (tutoria.getFechaTutoria() == null || tutoria.getHoraFin() == null) {
+            throw new IllegalStateException("No se puede confirmar asistencia: la tutoría no tiene fecha u hora fin");
+        }
+
+        LocalDateTime finTutoria = LocalDateTime.of(tutoria.getFechaTutoria(), tutoria.getHoraFin());
+        LocalDateTime ahora = LocalDateTime.now();
+
+        if (ahora.isBefore(finTutoria)) {
+            throw new IllegalStateException("No puedes confirmar asistencia antes de que finalice la tutoría");
+        }
     }
 
     /**

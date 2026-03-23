@@ -70,7 +70,7 @@ public class TutoriaController {
      * Agregar link de Meet (solo tutor)
      */
     @PutMapping("/{id}/link")
-    public ResponseEntity<Void> agregarLink(
+    public ResponseEntity<?> agregarLink(
             @PathVariable Integer id,
             @RequestBody ActualizarLinkRequest request,
             Authentication authentication) {
@@ -82,9 +82,9 @@ public class TutoriaController {
             tutoriaService.agregarLinkMeet(id, tutorId, request.getLinkTutoria());
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
