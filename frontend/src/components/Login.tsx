@@ -5,7 +5,7 @@ const Login: React.FC = () => {
   const handleGoogleAuth = () => {
     // Redirige al endpoint de OAuth2 de Spring Security
     // Funciona tanto para usuarios existentes como nuevos
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = `${process.env.REACT_APP_URL_BACKEND}/oauth2/authorization/google`;
   };
 
   return (

@@ -52,7 +52,7 @@ const TutorRequestReview: React.FC = () => {
 
     const fetchPendingApplications = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/tutor-requests/pending', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-requests/pending`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -68,7 +68,7 @@ const TutorRequestReview: React.FC = () => {
 
     const fetchHistoryApplications = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/tutor-requests/history', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-requests/history`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -87,7 +87,7 @@ const TutorRequestReview: React.FC = () => {
 
     const handleDownload = async (fileName: string) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/tutor-requests/download/${fileName}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-requests/download/${fileName}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -120,7 +120,7 @@ const TutorRequestReview: React.FC = () => {
 
         setProcessingId(id);
         try {
-            const response = await fetch(`http://localhost:8080/api/tutor-requests/${id}/status`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-requests/${id}/status`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,

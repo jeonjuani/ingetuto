@@ -39,7 +39,7 @@ const StudentAvailabilityBrowser: React.FC = () => {
     const loadMaterias = useCallback(async () => {
         if (!token) return;
         try {
-            const response = await fetch('http://localhost:8080/api/materias', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/materias`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {

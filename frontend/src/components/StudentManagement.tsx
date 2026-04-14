@@ -41,7 +41,7 @@ const StudentManagement: React.FC = () => {
 
     const fetchUsers = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/admin/users', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/admin/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -71,7 +71,7 @@ const StudentManagement: React.FC = () => {
         const newRoles = user.roles.filter(r => r.nombre !== 'TUTOR').map(r => r.nombre);
 
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/users/${user.idUsuario}/roles`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/admin/users/${user.idUsuario}/roles`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -97,7 +97,7 @@ const StudentManagement: React.FC = () => {
         if (!window.confirm('¿Estás seguro de eliminar este usuario permanentemente?')) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,

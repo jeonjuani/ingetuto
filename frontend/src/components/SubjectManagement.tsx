@@ -31,7 +31,7 @@ const SubjectManagement: React.FC = () => {
 
     const fetchSubjects = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/materias', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/materias`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -64,7 +64,7 @@ const SubjectManagement: React.FC = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:8080/api/materias', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/materias`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -108,7 +108,7 @@ const SubjectManagement: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/api/materias/${id}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/materias/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -140,7 +140,7 @@ const SubjectManagement: React.FC = () => {
         setSuccess(null);
 
         try {
-            const response = await fetch(`http://localhost:8080/api/materias/${id}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/materias/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,

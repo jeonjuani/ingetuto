@@ -23,7 +23,7 @@ const TutorSubjects: React.FC = () => {
     const fetchSubjects = useCallback(async () => {
         if (!token) return;
         try {
-            const response = await fetch('http://localhost:8080/api/tutor-subjects/my-subjects', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-subjects/my-subjects`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -58,7 +58,7 @@ const TutorSubjects: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/api/tutor-subjects/${id}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-subjects/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
