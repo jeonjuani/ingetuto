@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { disponibilidadService, DisponibilidadSemanalDTO } from '../services/disponibilidadService';
 import { FaSave as FaSaveIcon, FaInfoCircle as FaInfoCircleIcon } from 'react-icons/fa';
@@ -15,11 +15,7 @@ const WeeklyTemplateEditor: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    useEffect(() => {
-        loadTemplate();
-    }, []);
-
-    const loadTemplate = async () => {
+    const loadTemplate = useCallback(async () => {
         if (!token) return;
         try {
             setLoading(true);
@@ -30,7 +26,11 @@ const WeeklyTemplateEditor: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        loadTemplate();
+    }, [loadTemplate]);
 
     const handleCellClick = (day: string, hour: number) => {
         const hourStr = `${hour.toString().padStart(2, '0')}:00:00`;

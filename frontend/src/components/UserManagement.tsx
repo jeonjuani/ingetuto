@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './UserManagement.css';
 import { FaSearch, FaFilter } from 'react-icons/fa';
@@ -44,11 +44,7 @@ const UserManagement: React.FC = () => {
         return matchesEmail && matchesRole;
     });
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8080/api/admin/users', {
                 headers: {
@@ -65,7 +61,11 @@ const UserManagement: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleEditRoles = (user: User) => {
         setEditingUser(user.idUsuario);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { mensajeService, MensajeDTO } from '../services/mensajeService';
 import { TutoriaDTO } from '../services/tutoriaService';
@@ -21,19 +21,7 @@ const TutoriaChat: React.FC<TutoriaChatProps> = ({ tutoria, onClose, noLeidos })
     const [sending, setSending] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        loadMensajes();
-        // Polling cada 5 segundos para mensajes nuevos
-        const interval = setInterval(loadMensajes, 5000);
-        return () => clearInterval(interval);
-    }, []);
-
-    useEffect(() => {
-        // Scroll al último mensaje cada vez que lleguen mensajes nuevos
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [mensajes]);
-
-    const loadMensajes = async () => {
+    const loadMensajes = useCallback(async () => {
         if (!token) return;
         try {
             setLoading(true);
@@ -44,7 +32,19 @@ const TutoriaChat: React.FC<TutoriaChatProps> = ({ tutoria, onClose, noLeidos })
         } finally {
             setLoading(false);
         }
-    };
+    }, [token, tutoria.idTutoria]);
+
+    useEffect(() => {
+        loadMensajes();
+        // Polling cada 5 segundos para mensajes nuevos
+        const interval = setInterval(loadMensajes, 5000);
+        return () => clearInterval(interval);
+    }, [loadMensajes]);
+
+    useEffect(() => {
+        // Scroll al último mensaje cada vez que lleguen mensajes nuevos
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [mensajes]);
 
     const handleEnviar = async () => {
         if (!token || !contenido.trim()) return;

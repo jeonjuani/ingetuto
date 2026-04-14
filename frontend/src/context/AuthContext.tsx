@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
 import { axiosInstance } from '../services/axiosConfig';
 import SessionExpiredModal from '../components/SessionExpiredModal';
@@ -72,19 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Cargar usuario y token desde localStorage al iniciar
-  useEffect(() => {
-    if (hasInitialized.current) return;
-    hasInitialized.current = true;
-
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-      // Siempre obtener datos frescos del servidor al iniciar
-      fetchUser(savedToken);
-    }
-  }, []);
-
-  const fetchUser = async (accessToken: string) => {
+  const fetchUser = useCallback(async (accessToken: string) => {
     try {
       const response = await axiosInstance.get('/api/auth/me', {
         headers: {
@@ -113,7 +101,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error al obtener datos del usuario:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      setToken(savedToken);
+      // Siempre obtener datos frescos del servidor al iniciar
+      fetchUser(savedToken);
+    }
+  }, [fetchUser]);
 
   const setTokenFromCallback = async (newToken: string) => {
     setToken(newToken);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { tutoriaService, TutoriaDTO } from '../services/tutoriaService';
 import { FaCalendarAlt as FaCalendarAltIcon, FaUser as FaUserIcon, FaClock as FaClockIcon, FaLaptop as FaLaptopIcon, FaChalkboardTeacher as FaChalkboardTeacherIcon, FaLink as FaLinkIcon, FaTimes as FaTimesIcon } from 'react-icons/fa';
@@ -27,9 +27,24 @@ const MyTutoringSessions: React.FC = () => {
     const [confirming, setConfirming] = useState(false);
     const [chatTutoria, setChatTutoria] = useState<TutoriaDTO | null>(null);
 
+    const loadTutorias = useCallback(async () => {
+        if (!token) return;
+
+        try {
+            setLoading(true);
+            const estados = filter === 'TODAS' ? undefined : [filter];
+            const data = await tutoriaService.obtenerMisTutorias(estados, token);
+            setTutorias(data);
+        } catch (error) {
+            console.error('Error loading tutorías:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [token, filter]);
+
     useEffect(() => {
     loadTutorias();
-    }, [filter]);
+    }, [filter, loadTutorias]);
 
     // Polling cada 5 segundos para actualizar no leídos
     useEffect(() => {
@@ -45,22 +60,7 @@ const MyTutoringSessions: React.FC = () => {
         actualizarNoLeidos();
         const interval = setInterval(actualizarNoLeidos, 5000);
         return () => clearInterval(interval);
-    }, [tutorias]);
-
-    const loadTutorias = async () => {
-        if (!token) return;
-
-        try {
-            setLoading(true);
-            const estados = filter === 'TODAS' ? undefined : [filter];
-            const data = await tutoriaService.obtenerMisTutorias(estados, token);
-            setTutorias(data);
-        } catch (error) {
-            console.error('Error loading tutorías:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [tutorias, token]);
 
     const handleCancelClick = (tutoria: TutoriaDTO) => {
         setSelectedTutoria(tutoria);
@@ -160,7 +160,7 @@ const MyTutoringSessions: React.FC = () => {
             const count = await mensajeService.contarNoLeidos(t.idTutoria, token);
             setNoLeidos(prev => ({ ...prev, [t.idTutoria]: count }));
         });
-    }, [tutorias]);
+    }, [tutorias, token]);
 
     return (
         <div className="student-browser">
