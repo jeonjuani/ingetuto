@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './UserManagement.css';
 import { FaSearch, FaFilter, FaUserMinus, FaTrash } from 'react-icons/fa';
@@ -39,11 +39,7 @@ const StudentManagement: React.FC = () => {
         return matchesEmail && matchesRole;
     });
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8080/api/admin/users', {
                 headers: {
@@ -60,7 +56,11 @@ const StudentManagement: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleRevokeTutor = async (user: User) => {
         if (!window.confirm(`¿Estás seguro de quitar el rol de TUTOR a ${user.primerNombre} ${user.primerApellido}? Esto eliminará sus materias asociadas.`)) {

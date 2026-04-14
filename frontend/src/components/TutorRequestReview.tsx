@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaDownload, FaCheck, FaTimes, FaSearch, FaFilter } from 'react-icons/fa';
 import './TutorRequestReview.css';
@@ -50,12 +50,7 @@ const TutorRequestReview: React.FC = () => {
     const SearchIcon: any = FaSearch;
     const FilterIcon: any = FaFilter;
 
-    useEffect(() => {
-        fetchPendingApplications();
-        fetchHistoryApplications();
-    }, []);
-
-    const fetchPendingApplications = async () => {
+    const fetchPendingApplications = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8080/api/tutor-requests/pending', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -69,9 +64,9 @@ const TutorRequestReview: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
 
-    const fetchHistoryApplications = async () => {
+    const fetchHistoryApplications = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8080/api/tutor-requests/history', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -83,7 +78,12 @@ const TutorRequestReview: React.FC = () => {
         } catch (error) {
             console.error('Error fetching history applications:', error);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        fetchPendingApplications();
+        fetchHistoryApplications();
+    }, [fetchPendingApplications, fetchHistoryApplications]);
 
     const handleDownload = async (fileName: string) => {
         try {

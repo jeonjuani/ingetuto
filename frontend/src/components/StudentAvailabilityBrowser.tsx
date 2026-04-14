@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { disponibilidadService, DisponibilidadMensualDTO } from '../services/disponibilidadService';
 import { tutoriaService } from '../services/tutoriaService';
@@ -36,11 +36,7 @@ const StudentAvailabilityBrowser: React.FC = () => {
     const [nombreTema, setNombreTema] = useState('');
     const [reserving, setReserving] = useState(false);
 
-    useEffect(() => {
-        loadMaterias();
-    }, []);
-
-    const loadMaterias = async () => {
+    const loadMaterias = useCallback(async () => {
         if (!token) return;
         try {
             const response = await fetch('http://localhost:8080/api/materias', {
@@ -59,7 +55,11 @@ const StudentAvailabilityBrowser: React.FC = () => {
         } catch (error) {
             console.error('Error loading subjects:', error);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        loadMaterias();
+    }, [loadMaterias]);
 
     const handleSearch = async () => {
         if (!token || !selectedMateria) return;

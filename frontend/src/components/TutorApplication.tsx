@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './TutorApplication.css';
 
@@ -27,12 +27,7 @@ const TutorApplication: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchSubjects();
-        fetchMyApplications();
-    }, []);
-
-    const fetchSubjects = async () => {
+    const fetchSubjects = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8080/api/materias', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -44,9 +39,9 @@ const TutorApplication: React.FC = () => {
         } catch (error) {
             console.error('Error fetching subjects:', error);
         }
-    };
+    }, [token]);
 
-    const fetchMyApplications = async () => {
+    const fetchMyApplications = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8080/api/tutor-requests/my-requests', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -58,7 +53,12 @@ const TutorApplication: React.FC = () => {
         } catch (error) {
             console.error('Error fetching applications:', error);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        fetchSubjects();
+        fetchMyApplications();
+    }, [fetchSubjects, fetchMyApplications]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './SubjectManagement.css';
 import { FaSearch } from 'react-icons/fa';
@@ -29,11 +29,7 @@ const SubjectManagement: React.FC = () => {
         subject.codigoMateria.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    useEffect(() => {
-        fetchSubjects();
-    }, []);
-
-    const fetchSubjects = async () => {
+    const fetchSubjects = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8080/api/materias', {
                 headers: {
@@ -51,7 +47,11 @@ const SubjectManagement: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        fetchSubjects();
+    }, [fetchSubjects]);
 
     const handleAddSubject = async (e: React.FormEvent) => {
         e.preventDefault();

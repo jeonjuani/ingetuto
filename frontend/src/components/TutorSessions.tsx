@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { tutoriaService, TutoriaDTO } from '../services/tutoriaService';
 import { FaCalendarAlt as FaCalendarAltIcon, FaUser as FaUserIcon, FaClock as FaClockIcon, FaLaptop as FaLaptopIcon, FaChalkboardTeacher as FaChalkboardTeacherIcon, FaLink as FaLinkIcon, FaTimes as FaTimesIcon, FaPlus as FaPlusIcon } from 'react-icons/fa';
@@ -29,9 +29,25 @@ const TutorSessions: React.FC = () => {
     const [processing, setProcessing] = useState(false);
     const [confirming, setConfirming] = useState(false);
     const [chatTutoria, setChatTutoria] = useState<TutoriaDTO | null>(null);
+
+    const loadTutorias = useCallback(async () => {
+        if (!token) return;
+
+        try {
+            setLoading(true);
+            const estados = filter === 'TODAS' ? undefined : [filter];
+            const data = await tutoriaService.obtenerTutoriasAsignadas(estados, token);
+            setTutorias(data);
+        } catch (error) {
+            console.error('Error loading tutorías:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [token, filter]);
+
     useEffect(() => {
     loadTutorias();
-    }, [filter]);
+    }, [loadTutorias]);
         // Polling cada 5 segundos para actualizar no leídos
     useEffect(() => {
         if (tutorias.length === 0 || !token) return;
@@ -46,22 +62,7 @@ const TutorSessions: React.FC = () => {
         actualizarNoLeidos();
         const interval = setInterval(actualizarNoLeidos, 5000);
         return () => clearInterval(interval);
-    }, [tutorias]);
-
-    const loadTutorias = async () => {
-        if (!token) return;
-
-        try {
-            setLoading(true);
-            const estados = filter === 'TODAS' ? undefined : [filter];
-            const data = await tutoriaService.obtenerTutoriasAsignadas(estados, token);
-            setTutorias(data);
-        } catch (error) {
-            console.error('Error loading tutorías:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [tutorias, token]);
 
     const handleAddLinkClick = (tutoria: TutoriaDTO) => {
         setSelectedTutoria(tutoria);
@@ -192,7 +193,7 @@ const TutorSessions: React.FC = () => {
                 const count = await mensajeService.contarNoLeidos(t.idTutoria, token);
                 setNoLeidos(prev => ({ ...prev, [t.idTutoria]: count }));
             });
-        }, [tutorias]);
+        }, [tutorias, token]);
         
         
     return (

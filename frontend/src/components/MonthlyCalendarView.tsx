@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { disponibilidadService, DisponibilidadMensualDTO } from '../services/disponibilidadService';
 import { FaChevronLeft as FaChevronLeftIcon, FaChevronRight as FaChevronRightIcon, FaCalendarPlus as FaCalendarPlusIcon } from 'react-icons/fa';
@@ -25,11 +25,8 @@ const MonthlyCalendarView: React.FC = () => {
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
-    useEffect(() => {
-        loadMonthData();
-    }, [currentDate]);
 
-    const loadMonthData = async () => {
+    const loadMonthData = useCallback(async () => {
         if (!token) return;
         try {
             setLoading(true);
@@ -48,7 +45,11 @@ const MonthlyCalendarView: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token, currentDate]);
+
+    useEffect(() => {
+        loadMonthData();
+    }, [loadMonthData]);
 
     const generateFromTemplate = async () => {
         if (!token) return;
