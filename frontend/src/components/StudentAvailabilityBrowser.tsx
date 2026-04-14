@@ -2,16 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { disponibilidadService, DisponibilidadMensualDTO } from '../services/disponibilidadService';
 import { tutoriaService } from '../services/tutoriaService';
-import { FaSearch as FaSearchIcon, FaCalendarAlt as FaCalendarAltIcon, FaUser as FaUserIcon, FaLaptop as FaLaptopIcon, FaChalkboardTeacher as FaChalkboardTeacherIcon, FaTimes as FaTimesIcon } from 'react-icons/fa';
+import { FaSearch, FaCalendarAlt, FaUser, FaLaptop, FaChalkboardTeacher, FaTimes } from 'react-icons/fa';
 import './AvailabilityManagement.css';
 
-const FaTimes: any = FaTimesIcon;
-
-const FaSearch: any = FaSearchIcon;
-const FaCalendarAlt: any = FaCalendarAltIcon;
-const FaUser: any = FaUserIcon;
-const FaLaptop: any = FaLaptopIcon;
-const FaChalkboardTeacher: any = FaChalkboardTeacherIcon;
+// Type assertions for icon components
+const SearchIcon = FaSearch as React.ComponentType<any>;
+const CalendarIcon = FaCalendarAlt as React.ComponentType<any>;
+const UserIcon = FaUser as React.ComponentType<any>;
+const LaptopIcon = FaLaptop as React.ComponentType<any>;
+const ChalkboardIcon = FaChalkboardTeacher as React.ComponentType<any>;
+const TimesIcon = FaTimes as React.ComponentType<any>;
 
 interface Materia {
     idMateria: number;
@@ -144,7 +144,7 @@ const StudentAvailabilityBrowser: React.FC = () => {
         if (block.estado !== 'DISPONIBLE') return false;
 
         //No mostrar bloques del propio estudiante
-        if(block.idTutor == user?.id) return false; // No mostrar bloques propios
+        if(block.idTutor === user?.id) return false; // No mostrar bloques propios
 
         // No mostrar bloques con menos de 1 hora de anticipación
         const ahora = new Date();
@@ -157,6 +157,12 @@ const StudentAvailabilityBrowser: React.FC = () => {
         if (selectedModality === 'TODAS') return true;
         return block.modalidad === selectedModality;
     });
+
+    const searchButtonContent = !loading ? (
+        <><SearchIcon /> Buscar</>
+    ) : (
+        <>Buscando...</>
+    );
 
     return (
         <div className="student-browser">
@@ -234,7 +240,7 @@ const StudentAvailabilityBrowser: React.FC = () => {
                             marginTop: '22px'
                         }}
                     >
-                        {loading ? 'Buscando...' : <><FaSearch /> Buscar</>}
+                        {searchButtonContent}
                     </button>
                 </div>
             </div>
@@ -251,16 +257,16 @@ const StudentAvailabilityBrowser: React.FC = () => {
                         <div key={block.idDisponibilidadMensual} className="tutor-card">
                             <div className="tutor-header">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <FaUser style={{ color: '#666' }} />
+                                    <UserIcon style={{ color: '#666' }} />
                                     <span className="tutor-name">{block.nombreTutor}</span>
                                 </div>
                                 <span className={`modality-badge ${block.modalidad.toLowerCase()}`}>
-                                    {block.modalidad === 'VIRTUAL' ? <FaLaptop /> : <FaChalkboardTeacher />} {block.modalidad}
+                                    {block.modalidad === 'VIRTUAL' ? <LaptopIcon /> : <ChalkboardIcon />} {block.modalidad}
                                 </span>
                             </div>
 
                             <div className="card-time">
-                                <FaCalendarAlt style={{ marginRight: '5px', color: '#888' }} />
+                                <CalendarIcon style={{ marginRight: '5px', color: '#888' }} />
                                 <strong>{formatDate(block.fecha)}</strong>
                                 <div style={{ marginLeft: '20px', marginTop: '5px' }}>
                                     {block.horaInicio.substring(0, 5)} - {block.horaFin.substring(0, 5)}
@@ -312,7 +318,7 @@ const StudentAvailabilityBrowser: React.FC = () => {
                                     color: '#666'
                                 }}
                             >
-                                <FaTimes />
+                                <TimesIcon />
                             </button>
                         </div>
 

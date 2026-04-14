@@ -5,8 +5,6 @@ import { FaChevronLeft as FaChevronLeftIcon, FaChevronRight as FaChevronRightIco
 import DayDetailModal from './DayDetailModal';
 import ConfirmModal from './ConfirmModal';
 
-const FaChevronLeft: any = FaChevronLeftIcon;
-const FaChevronRight: any = FaChevronRightIcon;
 const FaCalendarPlus: any = FaCalendarPlusIcon;
 interface ConfirmModalState {
     isOpen: boolean;
@@ -21,7 +19,6 @@ const MonthlyCalendarView: React.FC = () => {
     const [blocks, setBlocks] = useState<DisponibilidadMensualDTO[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-    const [deadline, setDeadline] = useState<string | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
@@ -34,12 +31,6 @@ const MonthlyCalendarView: React.FC = () => {
             const anio = currentDate.getFullYear();
             const data = await disponibilidadService.obtenerMensual(mes, anio, token);
             setBlocks(data);
-
-            // Calculate deadline for this month (last day of previous month)
-            const prevMonth = new Date(anio, mes - 2, 1); // mes is 1-based
-            const lastDayPrevMonth = new Date(prevMonth.getFullYear(), prevMonth.getMonth() + 1, 0);
-            setDeadline(lastDayPrevMonth.toLocaleDateString());
-
         } catch (error) {
             console.error('Error loading month data:', error);
         } finally {
@@ -164,19 +155,6 @@ const MonthlyCalendarView: React.FC = () => {
 
     const days = getDaysInMonth();
     const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-    const isDeadlinePassed = () => {
-        // Logic: Deadline is last day of PREVIOUS month
-        // So if we are in Dec, deadline was Nov 30.
-        // If today > Nov 30, we cannot generate for Dec.
-
-        // Actually, the requirement says: "The tutor must generate... by the last day of the month (except Feb...)"
-        // It implies generating for the NEXT month? Or current?
-        // Usually availability is for the NEXT month.
-        // Let's assume we can generate if today <= deadline.
-
-        // Simple check: The backend validates this. We just enable the button if no blocks exist.
-        return false;
-    };
 
     return (
         <div className="calendar-view">

@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import './SubjectManagement.css';
 import { FaSearch } from 'react-icons/fa';
 
+// Type assertion for icon component
+const SearchIcon = FaSearch as React.ComponentType<any>;
+
 interface Subject {
     id_materia: number;
     nombre_materia: string;
@@ -183,7 +186,7 @@ const SubjectManagement: React.FC = () => {
 
             <div className="controls-container">
                 <div className="search-box">
-                    <FaSearch className="search-icon" />
+                    <SearchIcon className="search-icon" />
                     <input
                         type="text"
                         placeholder="Buscar por nombre o código"
