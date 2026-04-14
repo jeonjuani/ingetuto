@@ -20,9 +20,6 @@ const SubjectManagement: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    // Fix para TypeScript con react-icons
-    const SearchIcon: any = FaSearch;
-
     // Filtrar materias por nombre o código
     const filteredSubjects = subjects.filter(subject =>
         subject.nombre_materia.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -186,7 +183,7 @@ const SubjectManagement: React.FC = () => {
 
             <div className="controls-container">
                 <div className="search-box">
-                    <SearchIcon className="search-icon" />
+                    <FaSearch className="search-icon" />
                     <input
                         type="text"
                         placeholder="Buscar por nombre o código"
