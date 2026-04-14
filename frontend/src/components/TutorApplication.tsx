@@ -29,7 +29,7 @@ const TutorApplication: React.FC = () => {
 
     const fetchSubjects = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/materias', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/materias`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -43,7 +43,7 @@ const TutorApplication: React.FC = () => {
 
     const fetchMyApplications = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/tutor-requests/my-requests', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-requests/my-requests`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -77,7 +77,7 @@ const TutorApplication: React.FC = () => {
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8080/api/tutor-requests', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/tutor-requests`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

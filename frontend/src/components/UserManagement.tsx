@@ -46,7 +46,7 @@ const UserManagement: React.FC = () => {
 
     const fetchUsers = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/admin/users', {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/admin/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -82,7 +82,7 @@ const UserManagement: React.FC = () => {
 
     const handleSaveRoles = async (userId: number) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/roles`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/admin/users/${userId}/roles`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -108,7 +108,7 @@ const UserManagement: React.FC = () => {
         if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
