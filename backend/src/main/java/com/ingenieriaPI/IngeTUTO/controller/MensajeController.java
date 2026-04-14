@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/mensajes")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://ingetutoudea.vercel.app")
 public class MensajeController {
 
     private final MensajeService mensajeService;

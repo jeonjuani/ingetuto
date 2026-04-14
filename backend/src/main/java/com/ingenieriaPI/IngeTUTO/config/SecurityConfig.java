@@ -40,7 +40,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("https://ingetutoudea.vercel.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -101,7 +101,7 @@ public class SecurityConfig {
                 // ✅ Limpiar cualquier contenido previo y redirigir al frontend con el token
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "http://localhost:3000/?token="
+                String frontendUrl = "https://ingetutoudea.vercel.app/?token="
                         + java.net.URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8);
                 response.setHeader("Location", frontendUrl);
                 response.flushBuffer();
@@ -110,7 +110,7 @@ public class SecurityConfig {
                 // Caso de correo no permitido (no @udea.edu.co)
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "http://localhost:3000/?message=" +
+                String frontendUrl = "https://ingetutoudea.vercel.app/?message=" +
                         java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
                 response.setHeader("Location", frontendUrl);
                 response.flushBuffer();
@@ -118,7 +118,7 @@ public class SecurityConfig {
                 // Error inesperado
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "http://localhost:3000/?message=" +
+                String frontendUrl = "https://ingetutoudea.vercel.app/?message=" +
                         java.net.URLEncoder.encode("Error al procesar la autenticación",
                                 java.nio.charset.StandardCharsets.UTF_8);
                 response.setHeader("Location", frontendUrl);
