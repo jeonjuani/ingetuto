@@ -19,7 +19,7 @@ const AuthCallback: React.FC = () => {
         // Limpiar la URL
         window.history.replaceState({}, document.title, window.location.pathname);
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = '/dashboard';
         }, 3000);
       } else if (token) {
         try {
@@ -48,11 +48,11 @@ const AuthCallback: React.FC = () => {
   }, [setTokenFromCallback]);
 
   // Si ya está autenticado, redirigir inmediatamente
-  useEffect(() => {
+/*  useEffect(() => {
     if (isAuthenticated) {
       window.location.href = '/';
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated]);*/
 
   return (
     <div className="auth-container">
