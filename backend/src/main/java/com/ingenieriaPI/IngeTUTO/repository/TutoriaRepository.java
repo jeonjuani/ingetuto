@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +27,12 @@ public interface TutoriaRepository extends JpaRepository<Tutoria, Integer> {
     List<Tutoria> findByTutorAndEstadoIn(Usuario tutor, Collection<EstadoTutoria> estados);
 
     boolean existsByDisponibilidadMensual(DisponibilidadMensual bloque);
+
+    @Query("SELECT COUNT(t) FROM Tutoria t WHERE t.estudiante = :estudiante AND t.estado = 'RESERVADA'")
+    long countTutoriasReservadas(@Param("estudiante") Usuario estudiante);
+
+    @Query("SELECT COUNT(t) FROM Tutoria t WHERE t.estudiante = :estudiante AND t.fechaSolicitud >= :inicio AND t.fechaSolicitud <= :fin")
+    long countTutoriasSolicitadasMes(@Param("estudiante") Usuario estudiante, @Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
 
     /**
      * Verifica si el estudiante tiene conflictos de horario

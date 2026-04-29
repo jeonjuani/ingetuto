@@ -64,6 +64,21 @@ public class TutoriaService {
             throw new IllegalStateException("Ya tienes una tutoría reservada en este horario");
         }
 
+        // 4.1 Validar límite de tutorías reservadas simultáneamente (Max 5)
+        long reservadasActualmente = tutoriaRepository.countTutoriasReservadas(estudiante);
+        if (reservadasActualmente >= 5) {
+            throw new IllegalStateException("No puedes tener más de 5 tutorías reservadas al mismo tiempo");
+        }
+
+        // 4.2 Validar tope mensual (Max 25)
+        LocalDateTime hoy = LocalDateTime.now();
+        LocalDateTime inicioMes = LocalDateTime.of(hoy.getYear(), hoy.getMonth(), 1, 0, 0);
+        LocalDateTime finMes = inicioMes.plusMonths(1).minusNanos(1);
+        long solicitadasMes = tutoriaRepository.countTutoriasSolicitadasMes(estudiante, inicioMes, finMes);
+        if (solicitadasMes >= 25) {
+            throw new IllegalStateException("Has alcanzado el límite máximo mensual de 25 tutorías solicitadas");
+        }
+
         // 5. Crear la tutoría
         Tutoria tutoria = new Tutoria();
         tutoria.setEstudiante(estudiante);
