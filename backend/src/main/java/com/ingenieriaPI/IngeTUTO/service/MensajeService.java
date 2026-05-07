@@ -20,13 +20,16 @@ public class MensajeService {
     private final MensajeRepository mensajeRepository;
     private final TutoriaRepository tutoriaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EmailService emailService;
 
     public MensajeService(MensajeRepository mensajeRepository,
                           TutoriaRepository tutoriaRepository,
-                          UsuarioRepository usuarioRepository) {
+                          UsuarioRepository usuarioRepository,
+                          EmailService emailService) {
         this.mensajeRepository = mensajeRepository;
         this.tutoriaRepository = tutoriaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.emailService = emailService;
     }
 
     /**

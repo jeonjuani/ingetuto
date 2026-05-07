@@ -10,9 +10,7 @@ const AvailabilityManagement: React.FC = () => {
         <div className="availability-container">
             <div className="availability-header">
                 <h2>Gestión de Disponibilidad</h2>
-                <p style={{ color: '#666' }}>
-                    Revisa tu calendario de disponibilidad, genera plantillas semanales para el mes siguiente y configura tus horarios.
-                </p>
+                <p>Configura tus horarios semanales y revisa tu agenda mensual de tutorías.</p>
             </div>
 
             <div className="availability-tabs">
@@ -30,7 +28,7 @@ const AvailabilityManagement: React.FC = () => {
                 </button>
             </div>
 
-            <div className="tab-content">
+            <div className="tab-content" style={{ marginTop: '20px' }}>
                 {activeTab === 'template' ? (
                     <WeeklyTemplateEditor />
                 ) : (

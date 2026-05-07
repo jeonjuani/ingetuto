@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tutorias")
-@CrossOrigin(origins = "https://ingetutoudea.vercel.app")
+@CrossOrigin(origins = "${frontend.url}")
 public class TutoriaController {
 
     private final TutoriaService tutoriaService;

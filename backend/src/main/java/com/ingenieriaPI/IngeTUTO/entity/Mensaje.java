@@ -33,4 +33,7 @@ public class Mensaje {
 
     @Column(name="fecha_lectura")
     private LocalDateTime fechaLectura;
+
+    @Column(name="notificado_por_correo", nullable=false)
+    private Boolean notificadoPorCorreo = false;
 }

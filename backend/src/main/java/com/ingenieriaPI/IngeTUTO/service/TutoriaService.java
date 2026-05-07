@@ -21,16 +21,19 @@ public class TutoriaService {
     private final DisponibilidadMensualRepository disponibilidadMensualRepository;
     private final UsuarioRepository usuarioRepository;
     private final MateriaRepository materiaRepository;
+    private final EmailService emailService;
 
     public TutoriaService(
             TutoriaRepository tutoriaRepository,
             DisponibilidadMensualRepository disponibilidadMensualRepository,
             UsuarioRepository usuarioRepository,
-            MateriaRepository materiaRepository) {
+            MateriaRepository materiaRepository,
+            EmailService emailService) {
         this.tutoriaRepository = tutoriaRepository;
         this.disponibilidadMensualRepository = disponibilidadMensualRepository;
         this.usuarioRepository = usuarioRepository;
         this.materiaRepository = materiaRepository;
+        this.emailService = emailService;
     }
 
     /**
@@ -101,7 +104,10 @@ public class TutoriaService {
         // 7. Guardar tutoría
         Tutoria tutoriaGuardada = tutoriaRepository.save(tutoria);
 
-        // 8. Retornar DTO
+        // 8. Enviar correos asincrónicamente
+        emailService.enviarConfirmacionReserva(tutoriaGuardada);
+
+        // 9. Retornar DTO
         return convertirADTO(tutoriaGuardada);
     }
 
@@ -203,6 +209,10 @@ public class TutoriaService {
         tutoria.setObservaciones(observaciones);
 
         tutoriaRepository.save(tutoria);
+
+        // 6. Enviar correos de cancelación asincrónicamente
+        String canceladoPor = esEstudiante ? "Estudiante" : (esTutor ? "Tutor" : "Sistema");
+        emailService.enviarConfirmacionCancelacion(tutoria, canceladoPor, observaciones);
     }
 
     /**

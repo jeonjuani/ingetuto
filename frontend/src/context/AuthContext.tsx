@@ -94,10 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // Verificar si necesita teléfono
-      const phoneValue = usuario.telefonoUsuario;
-      const hasPhone = phoneValue && typeof phoneValue === 'string' && phoneValue.trim().length >= 10;
-      setNeedsPhoneNumber(!hasPhone);
+      // Verificar si necesita teléfono (Desactivado temporalmente según requerimiento)
+      // const phoneValue = usuario.telefonoUsuario;
+      // const hasPhone = phoneValue && typeof phoneValue === 'string' && phoneValue.trim().length >= 10;
+      setNeedsPhoneNumber(false);
     } catch (error) {
       console.error('Error al obtener datos del usuario:', error);
     }

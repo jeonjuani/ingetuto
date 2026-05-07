@@ -15,4 +15,7 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Integer> {
 
     // Contar mensajes no leídos de una tutoría para un usuario específico
     long countByTutoriaAndEmisorIdUsuarioNotAndLeidoFalse(Tutoria tutoria, Integer idUsuario);
+
+    // Obtener mensajes que aún no han sido notificados por correo
+    List<Mensaje> findByNotificadoPorCorreoFalse();
 }

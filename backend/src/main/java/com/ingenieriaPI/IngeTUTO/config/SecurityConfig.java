@@ -19,10 +19,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     private final JwtService jwtService;
     private final UsuarioService usuarioService;
@@ -40,7 +44,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://ingetutoudea.vercel.app"));
+        configuration.setAllowedOrigins(List.of(frontendUrl));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -101,27 +105,27 @@ public class SecurityConfig {
                 // ✅ Limpiar cualquier contenido previo y redirigir al frontend con el token
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "https://ingetutoudea.vercel.app/?token="
+                String redirectUrl = this.frontendUrl + "/?token="
                         + java.net.URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8);
-                response.setHeader("Location", frontendUrl);
+                response.setHeader("Location", redirectUrl);
                 response.flushBuffer();
 
             } catch (IllegalArgumentException e) {
                 // Caso de correo no permitido (no @udea.edu.co)
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "https://ingetutoudea.vercel.app/?message=" +
+                String redirectUrl = this.frontendUrl + "/?message=" +
                         java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
-                response.setHeader("Location", frontendUrl);
+                response.setHeader("Location", redirectUrl);
                 response.flushBuffer();
             } catch (Exception e) {
                 // Error inesperado
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                String frontendUrl = "https://ingetutoudea.vercel.app/?message=" +
+                String redirectUrl = this.frontendUrl + "/?message=" +
                         java.net.URLEncoder.encode("Error al procesar la autenticación",
                                 java.nio.charset.StandardCharsets.UTF_8);
-                response.setHeader("Location", frontendUrl);
+                response.setHeader("Location", redirectUrl);
                 response.flushBuffer();
             }
         };

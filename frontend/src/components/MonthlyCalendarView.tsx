@@ -6,6 +6,9 @@ import DayDetailModal from './DayDetailModal';
 import ConfirmModal from './ConfirmModal';
 
 const FaCalendarPlus: any = FaCalendarPlusIcon;
+const FaChevronLeft: any = FaChevronLeftIcon;
+const FaChevronRight: any = FaChevronRightIcon;
+
 interface ConfirmModalState {
     isOpen: boolean;
     title: string;
@@ -160,9 +163,13 @@ const MonthlyCalendarView: React.FC = () => {
         <div className="calendar-view">
             <div className="calendar-controls">
                 <div className="month-nav">
-                    <button className="nav-btn" onClick={() => changeMonth(-1)}>◀</button>
+                    <button className="nav-btn" onClick={() => changeMonth(-1)}>
+                        <FaChevronLeft />
+                    </button>
                     <h3>{monthName.charAt(0).toUpperCase() + monthName.slice(1)}</h3>
-                    <button className="nav-btn" onClick={() => changeMonth(1)}>▶</button>
+                    <button className="nav-btn" onClick={() => changeMonth(1)}>
+                        <FaChevronRight />
+                    </button>
                 </div>
 
                 <button
@@ -170,32 +177,62 @@ const MonthlyCalendarView: React.FC = () => {
                     onClick={generateFromTemplate}
                     disabled={loading}
                     style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#006837',
+                        padding: '12px 24px',
+                        backgroundColor: loading ? '#e2e8f0' : '#1e293b',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
+                        borderRadius: '12px',
+                        cursor: loading ? 'not-allowed' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px'
+                        gap: '10px',
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        transition: 'all 0.2s ease',
+                        boxShadow: loading ? 'none' : '0 4px 12px rgba(30, 41, 59, 0.1)'
                     }}
+                    onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#334155')}
+                    onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = '#1e293b')}
                 >
-                    <FaCalendarPlus /> {blocks.length > 0 ? 'Regenerar desde Plantilla Semanal' : 'Generar desde Plantilla Semanal'}
+                    <FaCalendarPlus /> 
+                    {blocks.length > 0 ? 'Regenerar Calendario' : 'Generar desde Plantilla'}
                 </button>
             </div>
 
             {message && (
                 <div style={{
-                    padding: '10px',
-                    marginBottom: '15px',
-                    borderRadius: '4px',
-                    backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
-                    color: message.type === 'success' ? '#155724' : '#721c24'
+                    padding: '12px 20px',
+                    marginBottom: '24px',
+                    borderRadius: '12px',
+                    backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                    color: message.type === 'success' ? '#10b981' : '#dc2626',
+                    border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
                 }}>
-                    {message.text}
+                    <span>{message.type === 'success' ? '✅' : '⚠️'}</span> {message.text}
                 </div>
             )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                <div className="legend" style={{ padding: '8px 16px', borderRadius: '10px' }}>
+                    <div className="legend-item" title="Bloque disponible virtual">
+                        <div className="color-box virtual"></div>
+                        <span>Virtual</span>
+                    </div>
+                    <div className="legend-item" title="Bloque disponible presencial">
+                        <div className="color-box presencial"></div>
+                        <span>Presencial</span>
+                    </div>
+                    <div className="legend-item" title="Tutoría ya reservada o pagada">
+                        <div className="color-box occupied"></div>
+                        <span>Bloqueado por tutoría reservada</span>
+                    </div>
+                </div>
+            </div>
 
             <div className="calendar-grid">
                 {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
@@ -212,23 +249,39 @@ const MonthlyCalendarView: React.FC = () => {
                         <div
                             key={date.toISOString()}
                             className="calendar-day"
-                            style={{ backgroundColor: isToday ? '#e3f2fd' : 'white' }}
+                            style={{ 
+                                backgroundColor: isToday ? '#eff6ff' : undefined,
+                                borderColor: isToday ? '#bfdbfe' : undefined
+                            }}
                             onClick={() => setSelectedDay(date)}
                         >
-                            <span className="day-number">{date.getDate()}</span>
+                            <span className="day-number" style={{ color: isToday ? '#2563eb' : undefined }}>
+                                {date.getDate()}
+                                {isToday && <span style={{ marginLeft: '8px', fontSize: '10px', backgroundColor: '#2563eb', color: 'white', padding: '2px 6px', borderRadius: '10px', verticalAlign: 'middle' }}>HOY</span>}
+                            </span>
+                            
                             <div className="day-blocks-indicator">
-                                {dayBlocks.map(b => (
-                                    <div
-                                        key={b.idDisponibilidadMensual}
-                                        className={`block-dot ${b.estado === 'DISPONIBLE' ? 'available' : b.estado === 'RESERVADO' ? 'reserved' : 'occupied'}`}
-                                        title={`${b.horaInicio.substring(0, 5)} - ${b.modalidad}`}
-                                    ></div>
-                                ))}
+                                {dayBlocks.slice(0, 3).map(b => {
+                                    const statusClass = b.estado === 'OCUPADO' ? 'occupied' : 
+                                                      b.estado === 'RESERVADO' ? 'reserved' : 
+                                                      b.modalidad.toLowerCase();
+                                    return (
+                                        <div
+                                            key={b.idDisponibilidadMensual}
+                                            className={`block-mini-item ${statusClass}`}
+                                            title={`${b.horaInicio.substring(0, 5)} - ${b.modalidad} (${b.estado})`}
+                                        ></div>
+                                    );
+                                })}
+                                {dayBlocks.length > 3 && (
+                                    <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '600', textAlign: 'center', marginTop: '2px' }}>
+                                        +{dayBlocks.length - 3} más
+                                    </div>
+                                )}
                             </div>
-                            {dayBlocks.length > 0 && (
-                                <div style={{ fontSize: '11px', color: '#666', marginTop: '5px' }}>
-                                    {dayBlocks.length} bloques
-                                </div>
+                            
+                            {dayBlocks.length === 0 && (
+                                <div style={{ height: '30px' }}></div>
                             )}
                         </div>
                     );

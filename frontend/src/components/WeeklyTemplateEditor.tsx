@@ -94,7 +94,7 @@ const WeeklyTemplateEditor: React.FC = () => {
                     </div>
                     <div className="legend-item">
                         <div className="color-box empty"></div>
-                        <span>Disponible</span>
+                        <span>No disponible</span>
                     </div>
                 </div>
                 <button
@@ -102,13 +102,22 @@ const WeeklyTemplateEditor: React.FC = () => {
                     onClick={saveTemplate}
                     disabled={loading}
                     style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#4CAF50',
+                        padding: '12px 24px',
+                        backgroundColor: loading ? '#e2e8f0' : '#10b981',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
+                        borderRadius: '12px',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: loading ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.2)'
                     }}
+                    onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#059669')}
+                    onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = '#10b981')}
                 >
                     {loading ? 'Guardando...' : <><FaSave /> Guardar Plantilla</>}
                 </button>
@@ -116,13 +125,19 @@ const WeeklyTemplateEditor: React.FC = () => {
 
             {message && (
                 <div style={{
-                    padding: '10px',
-                    marginBottom: '15px',
-                    borderRadius: '4px',
-                    backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
-                    color: message.type === 'success' ? '#155724' : '#721c24'
+                    padding: '12px 20px',
+                    marginBottom: '24px',
+                    borderRadius: '12px',
+                    backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                    color: message.type === 'success' ? '#10b981' : '#dc2626',
+                    border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
                 }}>
-                    {message.text}
+                    <span>{message.type === 'success' ? '✅' : '⚠️'}</span> {message.text}
                 </div>
             )}
 
@@ -134,7 +149,7 @@ const WeeklyTemplateEditor: React.FC = () => {
 
                 {DAYS.map(day => (
                     <React.Fragment key={day}>
-                        <div className="day-label">{day}</div>
+                        <div className="day-label">{day.substring(0, 3)}</div>
                         {HOURS.map(hour => {
                             const block = getBlock(day, hour);
                             return (
@@ -151,24 +166,30 @@ const WeeklyTemplateEditor: React.FC = () => {
                 ))}
             </div>
 
-            <div style={{ marginTop: '15px', fontSize: '14px', color: '#666', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <FaInfoCircle />
-                <span>Haz clic en una celda para alternar: Disponible → Virtual → Presencial → Disponible.</span>
-            </div>
-
-            <div style={{
-                marginTop: '10px',
-                padding: '10px 15px',
-                backgroundColor: '#e3f2fd',
-                borderLeft: '4px solid #006837',
-                borderRadius: '4px',
-                fontSize: '14px',
-                color: '#006837',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
+            <div style={{ 
+                marginTop: '24px', 
+                padding: '20px',
+                backgroundColor: '#f8fafc',
+                borderRadius: '16px',
+                border: '1px solid #f1f5f9'
             }}>
-                <span><strong>Recomendación:</strong> Considera dejar el domingo como día de descanso para mantener un balance saludable.</span>
+                <div style={{ fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <FaInfoCircle style={{ color: '#10b981' }} />
+                    <span>Haz clic en una celda para alternar: <strong>Disponible → Virtual → Presencial → Disponible</strong>.</span>
+                </div>
+                
+                <div style={{
+                    padding: '12px 16px',
+                    backgroundColor: '#eff6ff',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    color: '#2563eb',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                }}>
+                    <span>💡</span> <span><strong>Tip:</strong> Considera dejar el domingo libre para un mejor balance académico y personal.</span>
+                </div>
             </div>
         </div>
     );

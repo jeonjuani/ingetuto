@@ -27,19 +27,22 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
     );
 
     const formatDate = (date: Date) => {
-        return date.toLocaleDateString('es-ES', {
+        const str = date.toLocaleDateString('es-ES', {
             weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+            day: 'numeric',
+            month: 'long'
         });
+        return str.charAt(0).toUpperCase() + str.slice(1);
     };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>{formatDate(date)}</h3>
+                    <div>
+                        <h3 style={{ marginBottom: '4px' }}>Detalle del Día</h3>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#64748b', fontWeight: '500' }}>{formatDate(date)}</p>
+                    </div>
                     <button className="close-btn" onClick={onClose}>
                         <FaTimes />
                     </button>
@@ -47,9 +50,10 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
 
                 <div className="blocks-list">
                     {sortedBlocks.length === 0 ? (
-                        <p style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
-                            No hay bloques de disponibilidad para este día.
-                        </p>
+                        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#94a3b8' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '12px' }}>📅</div>
+                            <p style={{ margin: 0 }}>No hay bloques de disponibilidad para este día.</p>
+                        </div>
                     ) : (
                         sortedBlocks.map(block => (
                             <div key={block.idDisponibilidadMensual} className="block-item">
@@ -57,26 +61,37 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                                     <span className="block-time">
                                         {block.horaInicio.substring(0, 5)} - {block.horaFin.substring(0, 5)}
                                     </span>
-                                    <span style={{ fontSize: '14px', color: '#555' }}>
-                                        Modalidad: <strong>{block.modalidad}</strong>
-                                    </span>
-                                    <span className={`block-status status-${block.estado.toLowerCase()}`}>
-                                        {block.estado}
-                                    </span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                        <span className={`block-status status-${block.estado.toLowerCase()}`}>
+                                            {block.estado}
+                                        </span>
+                                        <span style={{ 
+                                            fontSize: '11px', 
+                                            fontWeight: '700', 
+                                            color: '#64748b',
+                                            backgroundColor: '#f1f5f9',
+                                            padding: '2px 8px',
+                                            borderRadius: '6px',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            {block.modalidad}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div className="block-actions">
-                                    {block.estado === 'DISPONIBLE' && (
+                                    {block.estado === 'DISPONIBLE' ? (
                                         <>
                                             <button
-                                                className="action-btn btn-edit"
+                                                className="action-btn"
+                                                style={{ backgroundColor: '#f1f5f9', color: '#475569' }}
                                                 onClick={() => onModalityChange(
                                                     block.idDisponibilidadMensual,
                                                     block.modalidad === 'VIRTUAL' ? 'PRESENCIAL' : 'VIRTUAL'
                                                 )}
                                                 title="Cambiar Modalidad"
                                             >
-                                                <FaExchangeAlt /> Cambiar
+                                                <FaExchangeAlt />
                                             </button>
                                             <button
                                                 className="action-btn btn-delete"
@@ -86,10 +101,17 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                                                 <FaTrash />
                                             </button>
                                         </>
-                                    )}
-                                    {(block.estado === 'RESERVADO' || block.estado === 'OCUPADO') && (
-                                        <span style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
-                                            No modificable
+                                    ) : (
+                                        <span style={{ 
+                                            fontSize: '11px', 
+                                            color: '#94a3b8', 
+                                            fontWeight: '600',
+                                            backgroundColor: '#f8fafc',
+                                            padding: '4px 10px',
+                                            borderRadius: '8px',
+                                            border: '1px dashed #e2e8f0'
+                                        }}>
+                                            BLOQUEADO
                                         </span>
                                     )}
                                 </div>

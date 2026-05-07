@@ -102,14 +102,14 @@ const MyTutoringSessions: React.FC = () => {
 
     const getEstadoBadgeColor = (estado: string) => {
         switch (estado) {
-            case 'RESERVADA': return '#FFA500';
-            case 'PROGRAMADA': return '#008148';
-            case 'PENDIENTE_CONFIRMACION': return '#FFD700';
-            case 'REALIZADA': return '#4CAF50';
-            case 'COMPLETADA': return '#2196F3';
-            case 'CANCELADA': return '#F44336';
-            case 'NO_EJECUTADA': return '#9E9E9E';
-            default: return '#666';
+            case 'RESERVADA': return '#f59e0b';
+            case 'PROGRAMADA': return '#10b981';
+            case 'PENDIENTE_CONFIRMACION': return '#facc15';
+            case 'REALIZADA': return '#22c55e';
+            case 'COMPLETADA': return '#3b82f6';
+            case 'CANCELADA': return '#ef4444';
+            case 'NO_EJECUTADA': return '#94a3b8';
+            default: return '#64748b';
         }
     };
 
@@ -166,23 +166,25 @@ const MyTutoringSessions: React.FC = () => {
         <div className="student-browser">
             <div className="availability-header">
                 <h2>Mis Tutorías</h2>
-                <p style={{ color: '#666' }}>Aquí puedes ver todas tus tutorías reservadas y su estado.</p>
+                <p style={{ color: '#666' }}>Gestiona tus sesiones reservadas y comunícate con tus tutores.</p>
             </div>
 
             {/* Filtros */}
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ marginBottom: '25px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {['TODAS', 'RESERVADA', 'PROGRAMADA', 'REALIZADA', 'CANCELADA'].map(estado => (
                     <button
                         key={estado}
                         onClick={() => setFilter(estado)}
                         style={{
-                            padding: '8px 16px',
-                            border: filter === estado ? '2px solid #008148' : '1px solid #ddd',
-                            borderRadius: '20px',
-                            backgroundColor: filter === estado ? '#e8f5e9' : 'white',
-                            color: filter === estado ? '#008148' : '#666',
+                            padding: '8px 18px',
+                            border: filter === estado ? '1px solid #10b981' : '1px solid #e2e8f0',
+                            borderRadius: '24px',
+                            backgroundColor: filter === estado ? '#ecfdf5' : '#ffffff',
+                            color: filter === estado ? '#059669' : '#475569',
                             cursor: 'pointer',
-                            fontWeight: filter === estado ? 'bold' : 'normal'
+                            fontWeight: filter === estado ? '600' : '500',
+                            boxShadow: filter === estado ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 'none',
+                            transition: 'all 0.2s ease'
                         }}
                     >
                         {estado === 'TODAS' ? 'Todas' : estado.charAt(0) + estado.slice(1).toLowerCase()}
@@ -192,12 +194,12 @@ const MyTutoringSessions: React.FC = () => {
 
             {/* Lista de Tutorías */}
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                    Cargando...
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                    Cargando tus tutorías...
                 </div>
             ) : filteredTutorias.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                    <p>No tienes tutorías {filter === 'TODAS' ? '' : `en estado ${filter.toLowerCase()}`}.</p>
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                    <p>No se encontraron tutorías {filter === 'TODAS' ? '' : `en estado ${filter.toLowerCase()}`}.</p>
                 </div>
             ) : (
                 <div className="results-grid">
@@ -205,59 +207,81 @@ const MyTutoringSessions: React.FC = () => {
                         <div key={tutoria.idTutoria} className="tutor-card">
                             <div className="tutor-header">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <FaUser style={{ color: '#666' }} />
-                                    <span className="tutor-name">{tutoria.nombreTutor}</span>
+                                    <div style={{ width: '32px', height: '32px', backgroundColor: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                                        <FaUser style={{ margin: 'auto' }} />
+                                    </div>
+                                    <span className="tutor-name" style={{ fontSize: '15px' }}>{tutoria.nombreTutor}</span>
                                 </div>
                                 <span
                                     style={{
                                         padding: '4px 12px',
-                                        borderRadius: '12px',
-                                        fontSize: '12px',
-                                        fontWeight: 'bold',
-                                        backgroundColor: getEstadoBadgeColor(tutoria.estado) + '20',
-                                        color: getEstadoBadgeColor(tutoria.estado)
+                                        borderRadius: '16px',
+                                        fontSize: '11px',
+                                        fontWeight: '700',
+                                        backgroundColor: getEstadoBadgeColor(tutoria.estado) + '1A',
+                                        color: getEstadoBadgeColor(tutoria.estado),
+                                        border: `1px solid ${getEstadoBadgeColor(tutoria.estado)}30`,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.3px'
                                     }}
                                 >
                                     {tutoria.estado}
                                 </span>
                             </div>
 
-                            <div style={{ marginTop: '12px' }}>
-                                <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
-                                    <strong>Materia:</strong> {tutoria.nombreMateria}
+                            <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '12px' }}>
+                                <p style={{ margin: '0 0 6px 0', color: '#1e293b', fontSize: '14px', fontWeight: '600' }}>
+                                    {tutoria.nombreMateria}
                                 </p>
-                                <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
+                                <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>
                                     <strong>Tema:</strong> {tutoria.nombreTema}
                                 </p>
                             </div>
 
-                            <div className="card-time" style={{ marginTop: '12px' }}>
-                                <FaCalendarAlt style={{ marginRight: '5px', color: '#888' }} />
-                                <strong>{formatDate(tutoria.fechaTutoria)}</strong>
-                                <div style={{ marginLeft: '20px', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <FaClock style={{ color: '#888' }} />
-                                    {tutoria.horaInicio.substring(0, 5)} - {tutoria.horaFin.substring(0, 5)}
+                            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#334155' }}>
+                                    <FaCalendarAlt style={{ color: '#10b981' }} />
+                                    <span>{formatDate(tutoria.fechaTutoria)}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#334155' }}>
+                                    <FaClock style={{ color: '#10b981' }} />
+                                    <span>{tutoria.horaInicio.substring(0, 5)} - {tutoria.horaFin.substring(0, 5)}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#334155' }}>
+                                    {tutoria.modalidad === 'VIRTUAL' ? <FaLaptop style={{ color: '#3b82f6' }} /> : <FaChalkboardTeacher style={{ color: '#f59e0b' }} />}
+                                    <span>{tutoria.modalidad}</span>
                                 </div>
                             </div>
 
-                            <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                {tutoria.modalidad === 'VIRTUAL' ? <FaLaptop /> : <FaChalkboardTeacher />}
-                                <span>{tutoria.modalidad}</span>
-                            </div>
+                            {tutoria.observaciones && (
+                                <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
+                                        <strong style={{ display: 'block', marginBottom: '2px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tus Observaciones:</strong>
+                                        {tutoria.observaciones}
+                                    </p>
+                                </div>
+                            )}
 
                             {tutoria.linkTutoria && tutoria.modalidad === 'VIRTUAL' && tutoria.estado !== 'CANCELADA' && tutoria.estado !== 'REALIZADA' && (
-                                <div style={{ marginTop: '12px' }}>
+                                <div style={{ marginTop: '16px' }}>
                                     <a
                                         href={tutoria.linkTutoria}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         style={{
-                                            display: 'inline-flex',
+                                            display: 'flex',
                                             alignItems: 'center',
-                                            gap: '6px',
-                                            color: '#008148',
+                                            justifyContent: 'center',
+                                            gap: '8px',
+                                            color: '#059669',
+                                            backgroundColor: '#ecfdf5',
+                                            padding: '10px',
+                                            borderRadius: '10px',
+                                            fontSize: '13px',
+                                            fontWeight: '600',
                                             textDecoration: 'none',
-                                            fontSize: '14px'
+                                            border: '1px solid #bbf7d0',
+                                            transition: 'all 0.2s ease'
                                         }}
                                     >
                                         <FaLink /> Unirse a la tutoría
@@ -265,114 +289,123 @@ const MyTutoringSessions: React.FC = () => {
                                 </div>
                             )}
 
-                            {tutoria.observaciones && (
-                                <div style={{ marginTop: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
-                                        <strong>Observaciones:</strong> {tutoria.observaciones}
-                                    </p>
-                                </div>
-                            )}
-
                             {/* Estado de confirmación */}
                             {tutoria.estado === 'PROGRAMADA' && (
-                                <div style={{ marginTop: '12px', padding: '8px', backgroundColor: '#e3f2fd', borderRadius: '4px' }}>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#1976d2' }}>
+                                <div style={{ 
+                                    marginTop: '16px', 
+                                    padding: '10px', 
+                                    backgroundColor: tutoria.confirmacionEstudiante ? '#f0fdf4' : '#eff6ff', 
+                                    borderRadius: '10px',
+                                    border: `1px solid ${tutoria.confirmacionEstudiante ? '#bbf7d0' : '#bfdbfe'}`
+                                }}>
+                                    <p style={{ margin: 0, fontSize: '12px', color: tutoria.confirmacionEstudiante ? '#166534' : '#1e40af', fontWeight: '500' }}>
                                         {tutoria.confirmacionEstudiante ? (
-                                            <span>✓ Ya confirmaste tu asistencia</span>
+                                            <span>✓ Asistencia confirmada</span>
                                         ) : tutoria.confirmacionTutor ? (
-                                            <span>El tutor ya confirmó. Confirma tu asistencia también.</span>
+                                            <span>El tutor confirmó. ¡Confirma tú también!</span>
                                         ) : (
-                                            <span>Confirma tu asistencia después de la tutoría</span>
+                                            <span>Por confirmar asistencia</span>
                                         )}
                                     </p>
                                 </div>
                             )}
 
-                            {/* Botón de confirmar asistencia */}
-                            {canConfirm(tutoria.estado) && !tutoria.confirmacionEstudiante && (
-                                <button
-                                    onClick={() => handleConfirmAttendance(tutoria)}
-                                    disabled={confirming}
-                                    style={{
-                                        marginTop: '12px',
-                                        width: '100%',
-                                        padding: '10px',
-                                        backgroundColor: confirming ? '#ccc' : '#2196F3',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: confirming ? 'not-allowed' : 'pointer',
-                                        fontSize: '14px',
-                                        fontWeight: 'bold'
-                                    }}
-                                >
-                                    {confirming ? 'Confirmando...' : 'Confirmar Asistencia'}
-                                </button>
-                            )}
+                            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {/* Botón de confirmar asistencia */}
+                                {canConfirm(tutoria.estado) && !tutoria.confirmacionEstudiante && (
+                                    <button
+                                        onClick={() => handleConfirmAttendance(tutoria)}
+                                        disabled={confirming}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            backgroundColor: confirming ? '#e2e8f0' : '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '12px',
+                                            cursor: confirming ? 'not-allowed' : 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: '600',
+                                            transition: 'all 0.2s ease',
+                                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)'
+                                        }}
+                                    >
+                                        {confirming ? 'Confirmando...' : 'Confirmar Asistencia'}
+                                    </button>
+                                )}
 
-                            <button
-                                onClick={() => {setChatTutoria(tutoria);
-                                    setNoLeidos(prev => ({ ...prev, [tutoria.idTutoria]: 0 }));
-                                }}
-                                style={{
-                                    marginTop: '12px',
-                                    width: '100%',
-                                    padding: '10px',
-                                    backgroundColor: '#006837',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold',
-                                    position: 'relative'
-                                }}
-                            >
-                                <img 
-                                    src={chatIcon} 
-                                    alt="chat" 
-                                    style={{ width: '18px', height: '18px', filter: 'invert(1)' }} 
-                                />
-                                Chat
-                                {noLeidos[tutoria.idTutoria] > 0 && (
-                                <span style={{
-                                    position: 'absolute',
-                                    top: '-6px',
-                                    right: '-6px',
-                                    backgroundColor: '#f44336',
-                                    color: 'white',
-                                    borderRadius: '50%',
-                                    width: '18px',
-                                    height: '18px',
-                                    fontSize: '11px',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    {noLeidos[tutoria.idTutoria]}
-                                </span>
-                            )}
-                            </button>
-                            {canCancel(tutoria.estado) && (
                                 <button
-                                    onClick={() => handleCancelClick(tutoria)}
+                                    onClick={() => {setChatTutoria(tutoria);
+                                        setNoLeidos(prev => ({ ...prev, [tutoria.idTutoria]: 0 }));
+                                    }}
                                     style={{
-                                        marginTop: '12px',
                                         width: '100%',
-                                        padding: '10px',
-                                        backgroundColor: '#f44336',
+                                        padding: '12px',
+                                        backgroundColor: '#1e293b',
                                         color: 'white',
                                         border: 'none',
-                                        borderRadius: '4px',
+                                        borderRadius: '12px',
                                         cursor: 'pointer',
                                         fontSize: '14px',
-                                        fontWeight: 'bold'
+                                        fontWeight: '600',
+                                        position: 'relative',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px',
+                                        transition: 'all 0.2s ease'
                                     }}
                                 >
-                                    Cancelar Tutoría
+                                    <img 
+                                        src={chatIcon} 
+                                        alt="chat" 
+                                        style={{ width: '18px', height: '18px', filter: 'invert(1)' }} 
+                                    />
+                                    Abrir Chat
+                                    {noLeidos[tutoria.idTutoria] > 0 && (
+                                        <span style={{
+                                            position: 'absolute',
+                                            top: '-5px',
+                                            right: '-5px',
+                                            backgroundColor: '#ef4444',
+                                            color: 'white',
+                                            borderRadius: '50%',
+                                            width: '20px',
+                                            height: '20px',
+                                            fontSize: '11px',
+                                            fontWeight: 'bold',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                        }}>
+                                            {noLeidos[tutoria.idTutoria]}
+                                        </span>
+                                    )}
                                 </button>
-                            )}
+
+                                {canCancel(tutoria.estado) && (
+                                    <button
+                                        onClick={() => handleCancelClick(tutoria)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '10px',
+                                            backgroundColor: 'transparent',
+                                            color: '#ef4444',
+                                            border: '1px solid #fecaca',
+                                            borderRadius: '12px',
+                                            cursor: 'pointer',
+                                            fontSize: '13px',
+                                            fontWeight: '600',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                    >
+                                        Cancelar Tutoría
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>

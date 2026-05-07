@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaHome, FaUsers, FaBook, FaFileSignature, FaClipboardCheck, FaCalendarAlt, FaSearch, FaClipboardList } from 'react-icons/fa';
 import './ProfilePanel.css';
@@ -25,7 +25,31 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
     mobileMenuOpen = false,
     setMobileMenuOpen
 }) => {
-    const { user } = useAuth();
+    const { user, switchRole, reloadUser, logout } = useAuth();
+    const [showRoleMenu, setShowRoleMenu] = useState(false);
+    const roleMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (roleMenuRef.current && !roleMenuRef.current.contains(event.target as Node)) {
+                setShowRoleMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const handleOpenRoleMenu = async () => {
+        if (!showRoleMenu) {
+            if (reloadUser) {
+                await reloadUser();
+            }
+        }
+        setShowRoleMenu(!showRoleMenu);
+    };
 
     const menuItems: MenuItem[] = [
         {
@@ -110,20 +134,45 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
     return (
         <aside className={`profile-panel ${mobileMenuOpen ? 'mobile-open' : ''}`}>
             <div className="panel-content">
+                <div className="sidebar-logo-container">
+                    <img
+                        src="/logoIngeTUTO.png"
+                        alt="IngeTUTO Logo"
+                        className="sidebar-logo"
+                    />
+                </div>
                 <div className="profile-card">
-                    <h3>Tu Perfil</h3>
                     <div className="profile-info">
                         <div className="info-item">
-                            <strong>Nombre:</strong>
                             <span>{user?.name || 'No especificado'}</span>
+                            <strong>{user?.email}</strong>
                         </div>
-                        <div className="info-item">
-                            <strong>Correo:</strong>
-                            <span>{user?.email}</span>
-                        </div>
-                        <div className="info-item">
-                            <strong>Rol Actual:</strong>
-                            <span className="current-role">{user?.activeRole}</span>
+                        <div className="info-item" style={{ overflow: 'visible' }}>
+                            <div className="role-selector" ref={roleMenuRef} style={{ position: 'relative', marginTop: '4px' }}>
+                                <button
+                                    className="current-role-btn"
+                                    onClick={handleOpenRoleMenu}
+                                    style={{ width: '100%', justifyContent: 'space-between' }}
+                                >
+                                    {user?.activeRole || 'Sin Rol'} ▼
+                                </button>
+                                {showRoleMenu && (
+                                    <div className="role-menu" style={{ top: '110%', width: '100%' }}>
+                                        {user?.roles.map((role) => (
+                                            <button
+                                                key={role.idRol}
+                                                className={`role-item ${user.activeRole === role.nombre ? 'active' : ''}`}
+                                                onClick={() => {
+                                                    switchRole(role.nombre);
+                                                    setShowRoleMenu(false);
+                                                }}
+                                            >
+                                                {role.nombre}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -144,6 +193,12 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
                         );
                     })}
                 </nav>
+
+                <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                    <button onClick={logout} className="logout-button" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                        Cerrar sesión
+                    </button>
+                </div>
             </div>
         </aside>
     );

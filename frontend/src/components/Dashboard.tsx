@@ -16,90 +16,23 @@ import TutorSessions from './TutorSessions';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const { user, logout, switchRole, reloadUser, needsPhoneNumber, updatePhoneNumber } = useAuth();
-  const [showRoleMenu, setShowRoleMenu] = React.useState(false);
+  const { user, needsPhoneNumber, updatePhoneNumber } = useAuth();
   const [activeView, setActiveView] = React.useState<string>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
-  const handleOpenRoleMenu = async () => {
-    if (!showRoleMenu) {
-      if (reloadUser) {
-        await reloadUser();
-      }
-    }
-    setShowRoleMenu(!showRoleMenu);
-  };
-
   const MenuIcon: any = mobileMenuOpen ? FaTimes : FaBars;
-
-  const roleMenuRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (roleMenuRef.current && !roleMenuRef.current.contains(event.target as Node)) {
-        setShowRoleMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   return (
     <>
       {needsPhoneNumber === true && <PhoneNumberModal onPhoneSubmit={updatePhoneNumber} />}
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <div className="header-content">
-            <div className="logo-section">
-              <button
-                className="mobile-menu-btn"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                <MenuIcon />
-              </button>
-              <img
-                src="/logoIngeTUTO.png"
-                alt="IngeTUTO Logo"
-                className="header-logo"
-              />
-              <h1 className="header-title">Facultad de Ingeniería</h1>
-            </div>
-            <div className="user-section">
-              <div className="role-selector" ref={roleMenuRef}>
-                <button
-                  className="current-role-btn"
-                  onClick={handleOpenRoleMenu}
-                >
-                  {user?.activeRole || 'Sin Rol'} ▼
-                </button>
-                {showRoleMenu && (
-                  <div className="role-menu">
-                    {user?.roles.map((role) => (
-                      <button
-                        key={role.idRol}
-                        className={`role-item ${user.activeRole === role.nombre ? 'active' : ''}`}
-                        onClick={() => {
-                          switchRole(role.nombre);
-                          setShowRoleMenu(false);
-                        }}
-                      >
-                        {role.nombre}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <span className="user-name">Hola, {user?.name || user?.email}</span>
-              <button onClick={logout} className="logout-button">
-                Cerrar sesión
-              </button>
-            </div>
-          </div>
-        </header>
+        <button
+          className="mobile-menu-btn floating"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <MenuIcon />
+        </button>
 
         <main className="dashboard-main">
           {mobileMenuOpen && (
