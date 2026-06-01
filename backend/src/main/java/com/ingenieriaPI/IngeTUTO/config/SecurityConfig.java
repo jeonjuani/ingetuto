@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/public/**", "/api/auth/**", "/oauth2/**", "/login/**", "/v3/api-docs/**",
-                                "/swagger-ui/**", "/swagger-ui.html")
+                                "/swagger-ui/**", "/swagger-ui.html", "/error")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/usuarios/phone").authenticated()

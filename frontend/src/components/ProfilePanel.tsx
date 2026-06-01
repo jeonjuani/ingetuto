@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FaHome, FaUsers, FaBook, FaFileSignature, FaClipboardCheck, FaCalendarAlt, FaSearch, FaClipboardList } from 'react-icons/fa';
+import { FaHome, FaUsers, FaBook, FaFileSignature, FaClipboardCheck, FaCalendarAlt, FaSearch, FaClipboardList, FaChartBar } from 'react-icons/fa';
 import './ProfilePanel.css';
 
 interface ProfilePanelProps {
@@ -86,6 +86,12 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
             id: 'tutor-requests',
             label: 'Solicitudes Tutores',
             icon: FaClipboardCheck,
+            roles: ['FUNCIONARIO_BIENESTAR']
+        },
+        {
+            id: 'bienestar-dashboard',
+            label: 'Métricas de Bienestar',
+            icon: FaChartBar,
             roles: ['FUNCIONARIO_BIENESTAR']
         },
         {

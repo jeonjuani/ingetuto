@@ -1,18 +1,30 @@
 package com.ingenieriaPI.IngeTUTO.controller;
 
+import com.ingenieriaPI.IngeTUTO.dto.DashboardDTO;
+import com.ingenieriaPI.IngeTUTO.service.DashboardService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/dashboard")
+@PreAuthorize("hasRole('FUNCIONARIO_BIENESTAR')")
 public class DashboardController {
 
-    @GetMapping("/api/dashboard")
-    public String dashboard() {
-        return "Bienvenido al dashboard seguro con JWT!";
+    private final DashboardService dashboardService;
+
+    public DashboardController(
+            DashboardService dashboardService) {
+        this.dashboardService = dashboardService;
     }
 
-    @GetMapping("/api/public/hello")
-    public String publicEndpoint() {
-        return "Este endpoint es público, no requiere login.";
+    @GetMapping
+    public ResponseEntity<DashboardDTO> obtenerDashboard() {
+        return ResponseEntity.ok(
+                dashboardService.obtenerDashboard()
+        );
+
     }
 }
