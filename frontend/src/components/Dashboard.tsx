@@ -14,6 +14,7 @@ import StudentAvailabilityBrowser from './StudentAvailabilityBrowser';
 import MyTutoringSessions from './MyTutoringSessions';
 import TutorSessions from './TutorSessions';
 import BienestarDashboard from './BienestarDashboard';
+import BienestarErrorBoundary from './BienestarErrorBoundary';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
@@ -72,7 +73,9 @@ const Dashboard: React.FC = () => {
             ) : activeView === 'students' && user?.activeRole === 'FUNCIONARIO_BIENESTAR' ? (
               <StudentManagement />
             ) : activeView === 'bienestar-dashboard' && user?.activeRole === 'FUNCIONARIO_BIENESTAR' ? (
-              <BienestarDashboard />
+              <BienestarErrorBoundary>
+                <BienestarDashboard />
+              </BienestarErrorBoundary>
             ) : (
               <div className="welcome-view">
                 <h2>Bienvenido a IngeTUTO</h2>
