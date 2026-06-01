@@ -128,14 +128,15 @@ const BienestarDashboard: React.FC = () => {
     }
 
     // Procesar datos para gráfico de evolución (Líneas)
-    const maxMesValue = Math.max(...data.tutoriasPorMes.map(d => d.cantidad), 10);
+    const tutoriasPorMes = data.tutoriasPorMes || [];
+    const maxMesValue = Math.max(...tutoriasPorMes.map(d => d.cantidad), 10);
     const chartHeight = 160;
     const chartWidth = 520;
     const paddingX = 50;
     const paddingY = 20;
 
-    const points = data.tutoriasPorMes.map((d, index) => {
-        const x = paddingX + (index * (chartWidth - paddingX * 2)) / Math.max(data.tutoriasPorMes.length - 1, 1);
+    const points = tutoriasPorMes.map((d, index) => {
+        const x = paddingX + (index * (chartWidth - paddingX * 2)) / Math.max(tutoriasPorMes.length - 1, 1);
         const y = paddingY + (chartHeight - paddingY * 2) * (1 - d.cantidad / maxMesValue);
         return { x, y, data: d };
     });
@@ -181,9 +182,10 @@ const BienestarDashboard: React.FC = () => {
           };
 
     // Procesar datos de Modalidad
-    const totalModalidad = Object.values(data.modalidadDistribucion || {}).reduce((acc, curr) => acc + curr, 0);
-    const presencialCount = data.modalidadDistribucion['PRESENCIAL'] || 0;
-    const virtualCount = data.modalidadDistribucion['VIRTUAL'] || 0;
+    const modalidadDistribucion = data.modalidadDistribucion || {};
+    const totalModalidad = Object.values(modalidadDistribucion).reduce((acc, curr) => acc + curr, 0);
+    const presencialCount = modalidadDistribucion['PRESENCIAL'] || 0;
+    const virtualCount = modalidadDistribucion['VIRTUAL'] || 0;
     const presencialPercent = totalModalidad > 0 ? (presencialCount / totalModalidad) * 100 : 0;
     const virtualPercent = totalModalidad > 0 ? (virtualCount / totalModalidad) * 100 : 0;
 
