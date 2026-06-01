@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,4 +64,89 @@ public interface TutoriaRepository extends JpaRepository<Tutoria, Integer> {
             "AND (t.confirmacionEstudiante IS NULL OR t.confirmacionEstudiante = false " +
             "OR t.confirmacionTutor IS NULL OR t.confirmacionTutor = false)")
     List<Tutoria> findTutoriasVencidasSinConfirmar(@Param("fechaLimite") LocalDate fechaLimite);
+
+    Long countByEstado(EstadoTutoria estado);
+
+    @Query("""
+SELECT COUNT(t)
+FROM Tutoria t
+""")
+    Long countTotalTutorias();
+
+    @Query("""
+SELECT COUNT(DISTINCT t.tutor.idUsuario)
+FROM Tutoria t
+WHERE t.estado = 'REALIZADA'
+""")
+    Long countTutoresActivos();
+
+    @Query("""
+SELECT COUNT(DISTINCT t.estudiante.idUsuario)
+FROM Tutoria t
+""")
+    Long countEstudiantesSolicitantes();
+
+    @Query("""
+SELECT YEAR(t.fechaTutoria),
+       MONTH(t.fechaTutoria),
+       COUNT(t)
+FROM Tutoria t
+WHERE t.fechaTutoria >= :fechaInicio
+GROUP BY YEAR(t.fechaTutoria),
+         MONTH(t.fechaTutoria)
+ORDER BY YEAR(t.fechaTutoria),
+         MONTH(t.fechaTutoria)
+""")
+    List<Object[]> obtenerTutoriasPorMes(
+            @Param("fechaInicio") LocalDate fechaInicio
+    );
+
+    @Query("""
+SELECT CONCAT(t.tutor.primerNombre, ' ', t.tutor.primerApellido),
+       COUNT(t)
+FROM Tutoria t
+WHERE t.estado = 'REALIZADA'
+GROUP BY t.tutor.idUsuario,
+         t.tutor.primerNombre,
+         t.tutor.primerApellido
+ORDER BY COUNT(t) DESC
+""")
+    List<Object[]> topTutores(Pageable pageable);
+
+    @Query("""
+SELECT t.materia.nombre_materia,
+       COUNT(t)
+FROM Tutoria t
+GROUP BY t.materia.id_materia,
+         t.materia.nombre_materia
+ORDER BY COUNT(t) DESC
+""")
+    List<Object[]> topMaterias(Pageable pageable);
+
+    @Query("""
+SELECT t.estudiante.primerNombre,
+       COUNT(t)
+FROM Tutoria t
+GROUP BY t.estudiante.idUsuario,
+         t.estudiante.primerNombre
+ORDER BY COUNT(t) DESC
+""")
+    List<Object[]> topEstudiantes(Pageable pageable);
+
+    @Query("""
+SELECT t.estado,
+       COUNT(t)
+FROM Tutoria t
+GROUP BY t.estado
+""")
+    List<Object[]> distribucionEstados();
+
+    @Query("""
+SELECT t.modalidad,
+       COUNT(t)
+FROM Tutoria t
+GROUP BY t.modalidad
+""")
+    List<Object[]> distribucionModalidad();
+
 }
